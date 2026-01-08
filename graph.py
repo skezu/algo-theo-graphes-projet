@@ -145,39 +145,33 @@ class Graph:
     def load_data(self) -> None:
         """
         Charge les données du réseau routier français.
-
-        Cette méthode initialise le graphe avec les villes et distances
-        du réseau routier. Les distances sont en kilomètres.
-
-        Villes incluses:
-            - Rennes, Caen, Paris, Nantes, Bordeaux, Lille,
-            - Lyon, Dijon, Grenoble, Nancy
-
-        Note:
-            Les données sont basées sur la carte fournie.
-            Structure extensible pour ajouter d'autres connexions.
         """
-        # TODO: Implémenter le chargement des données
-        # Données de la carte (distances en km approximatives):
-        # - Rennes <-> Caen: 75
-        # - Rennes <-> Nantes: 45
-        # - Rennes <-> Paris: 110
-        # - Caen <-> Paris: 50
-        # - Caen <-> Lille: 65
-        # - Paris <-> Lille: 70
-        # - Paris <-> Dijon: 60
-        # - Lille <-> Nancy: 100
-        # - Nantes <-> Paris: 80
-        # - Nantes <-> Bordeaux: 130
-        # - Bordeaux <-> Nantes: 90
-        # - Bordeaux <-> Lyon: 100
-        # - Lyon <-> Dijon: 70
-        # - Lyon <-> Grenoble: 40
-        # - Dijon <-> Nancy: 75
-        # - Dijon <-> Grenoble: 75
-        # - Grenoble <-> Nancy: 80
-        # - Nancy <-> Lille: 120
-        raise NotImplementedError("La méthode load_data doit être implémentée.")
+        # Liste des connexions basée sur les données fournies dans le module
+        # Format: (Ville A, Ville B, Distance en km)
+        road_connections = [
+            ("Rennes", "Caen", 75),
+            ("Rennes", "Nantes", 45),
+            ("Rennes", "Paris", 110),
+            ("Caen", "Paris", 50),
+            ("Caen", "Lille", 65),
+            ("Paris", "Lille", 70),
+            ("Paris", "Dijon", 60),
+            ("Lille", "Nancy", 100),
+            ("Nantes", "Paris", 80),
+            ("Nantes", "Bordeaux", 130),
+            ("Bordeaux", "Nantes", 90),
+            ("Bordeaux", "Lyon", 100),
+            ("Lyon", "Dijon", 70),
+            ("Lyon", "Grenoble", 40),
+            ("Dijon", "Nancy", 75),
+            ("Dijon", "Grenoble", 75),
+            ("Grenoble", "Nancy", 80),
+            ("Nancy", "Lille", 120)
+        ]
+
+        # On parcourt la liste pour ajouter chaque arête au graphe
+        for city1, city2, distance in road_connections:
+            self.add_edge(city1, city2, float(distance))
 
     def __repr__(self) -> str:
         """Représentation textuelle du graphe."""
