@@ -6,6 +6,7 @@ pour trouver les plus courts chemins dans un graphe pondéré.
 """
 
 from typing import Dict, List, Optional, Tuple, TYPE_CHECKING
+import heapq
 
 if TYPE_CHECKING:
     from graph import Graph
@@ -46,7 +47,58 @@ def dijkstra(
         Complexité: O((V + E) log V) avec une file de priorité.
         Ne fonctionne pas avec des poids négatifs.
     """
-    raise NotImplementedError("L'algorithme de Dijkstra doit être implémenté.")
+    # Vérification de base des nœuds
+    nodes = graph.get_nodes()
+    if start not in nodes:
+        raise KeyError(f"Le nœud de départ '{start}' n'existe pas.")
+    if end not in nodes:
+        raise KeyError(f"Le nœud d'arrivée '{end}' n'existe pas.")
+
+    # Initialisation
+    distances: Dict[str, float] = {node: float('inf') for node in nodes}
+    distances[start] = 0.0
+    previous: Dict[str, Optional[str]] = {node: None for node in nodes}
+    
+    # File de priorité : (distance, noeud)
+    pq: List[Tuple[float, str]] = [(0.0, start)]
+    
+    while pq:
+        current_distance, current_node = heapq.heappop(pq)
+        
+        # Si on a trouvé un chemin plus court vers ce nœud entre temps, on ignore
+        if current_distance > distances[current_node]:
+            continue
+            
+        if current_node == end:
+            break
+            
+        for neighbor in graph.get_neighbors(current_node):
+            weight = graph.get_weight(current_node, neighbor)
+            if weight is None:
+                continue
+                
+            if weight < 0:
+                raise ValueError("Dijkstra ne supporte pas les poids négatifs.")
+                
+            distance = current_distance + weight
+            
+            if distance < distances[neighbor]:
+                distances[neighbor] = distance
+                previous[neighbor] = current_node
+                heapq.heappush(pq, (distance, neighbor))
+                
+    # Reconstruction du chemin
+    if distances[end] == float('inf'):
+        return None, []
+        
+    path = []
+    current: Optional[str] = end
+    while current is not None:
+        path.append(current)
+        current = previous[current]
+    path.reverse()
+    
+    return distances[end], path
 
 
 def bellman_ford(
@@ -82,7 +134,34 @@ def bellman_ford(
         Complexité: O(V * E).
         Peut gérer les poids négatifs contrairement à Dijkstra.
     """
-    raise NotImplementedError("L'algorithme de Bellman-Ford doit être implémenté.")
+    nodes = graph.get_nodes()
+    if start not in nodes:
+        raise KeyError(f"Le nœud de départ '{start}' n'existe pas.")
+        
+    distances: Dict[str, float] = {node: float('inf') for node in nodes}
+    distances[start] = 0.0
+    predecessors: Dict[str, Optional[str]] = {node: None for node in nodes}
+    
+    edges = graph.get_edges()
+    
+    # Relaxation V-1 fois
+    for _ in range(len(nodes) - 1):
+        modified = False
+        for u, v, weight in edges:
+            if distances[u] != float('inf') and distances[u] + weight < distances[v]:
+                distances[v] = distances[u] + weight
+                predecessors[v] = u
+                modified = True
+        # Optimisation : si aucune distance n'a changé, on peut arrêter
+        if not modified:
+             break
+
+    # Détection de cycle négatif
+    for u, v, weight in edges:
+        if distances[u] != float('inf') and distances[u] + weight < distances[v]:
+            raise ValueError("Le graphe contient un cycle de poids négatif.")
+            
+    return distances, predecessors
 
 
 def floyd_warshall(
@@ -115,4 +194,32 @@ def floyd_warshall(
         Complexité: O(V³).
         Utile quand on a besoin de toutes les distances entre toutes les paires.
     """
-    raise NotImplementedError("L'algorithme de Floyd-Warshall doit être implémenté.")
+    nodes = graph.get_nodes()
+    dist: Dict[str, Dict[str, float]] = {u: {v: float('inf') for v in nodes} for u in nodes}
+    next_node: Dict[str, Dict[str, Optional[str]]] = {u: {v: None for v in nodes} for u in nodes}
+    
+    # Initialisation avec les arêtes existantes
+    for u in nodes:
+        dist[u][u] = 0.0
+        for v in graph.get_neighbors(u):
+            weight = graph.get_weight(u, v)
+            if weight is not None:
+                dist[u][v] = weight
+                next_node[u][v] = v
+                
+    # Algorithme principal
+    for k in nodes:
+        for i in nodes:
+            for j in nodes:
+                if dist[i][k] != float('inf') and dist[k][j] != float('inf'):
+                    new_dist = dist[i][k] + dist[k][j]
+                    if new_dist < dist[i][j]:
+                        dist[i][j] = new_dist
+                        next_node[i][j] = next_node[i][k]
+                        
+    # Détection de cycles négatifs (distance d'un nœud à lui-même < 0)
+    for u in nodes:
+        if dist[u][u] < 0:
+            raise ValueError("Le graphe contient un cycle de poids négatif.")
+            
+    return dist, next_node
