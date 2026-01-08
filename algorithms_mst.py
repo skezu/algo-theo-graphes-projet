@@ -5,7 +5,8 @@ Ce module contient les implémentations des algorithmes classiques
 pour trouver l'arbre couvrant de poids minimum dans un graphe.
 """
 
-from typing import List, Tuple, TYPE_CHECKING
+from typing import List, Tuple, Dict, TYPE_CHECKING
+import heapq
 
 if TYPE_CHECKING:
     from graph import Graph
@@ -42,7 +43,47 @@ def prim(graph: "Graph", start_node: str) -> List[Tuple[str, str, float]]:
         Complexité: O(E log V) avec une file de priorité.
         Le graphe doit être connexe pour avoir un arbre couvrant.
     """
-    raise NotImplementedError("L'algorithme de Prim doit être implémenté.")
+    visited = {start_node}
+    mst: List[Tuple[str, str, float]] = []
+    # File de priorité : (poids, u, v)
+    # On commence avec les arêtes partant du nœud de départ
+    edges = []
+    
+    # Vérification de l'existence du nœud
+    try:
+        neighbors = graph.get_neighbors(start_node)
+    except KeyError:
+         raise KeyError(f"Le nœud de départ '{start_node}' n'existe pas.")
+
+    for neighbor in neighbors:
+        weight = graph.get_weight(start_node, neighbor)
+        if weight is None: continue
+        heapq.heappush(edges, (weight, start_node, neighbor))
+    
+    expected_nodes_count = len(graph.get_nodes())
+    
+    while edges:
+        weight, u, v = heapq.heappop(edges)
+        
+        if v in visited:
+            continue
+            
+        visited.add(v)
+        mst.append((u, v, weight))
+        
+        for next_neighbor in graph.get_neighbors(v):
+            if next_neighbor not in visited:
+                next_weight = graph.get_weight(v, next_neighbor)
+                if next_weight is None: continue
+                heapq.heappush(edges, (next_weight, v, next_neighbor))
+                
+    # Vérification de la connexité (si graphe non connexe, on n'aura pas tous les nœuds)
+    if len(visited) != expected_nodes_count:
+        # Note : Pour un MST strict, on devrait lever une erreur ou gérer les composantes connexes.
+        # Ici on retourne ce qu'on a trouvé (MST de la composante connexe du start_node).
+        pass
+        
+    return mst
 
 
 def kruskal(graph: "Graph") -> List[Tuple[str, str, float]]:
@@ -74,7 +115,28 @@ def kruskal(graph: "Graph") -> List[Tuple[str, str, float]]:
         Complexité: O(E log E) ou O(E log V) avec Union-Find optimisé.
         Nécessite une structure Union-Find pour la détection de cycles.
     """
-    raise NotImplementedError("L'algorithme de Kruskal doit être implémenté.")
+    mst: List[Tuple[str, str, float]] = []
+    edges = graph.get_edges()
+    nodes = graph.get_nodes()
+    
+    # Tri des arêtes par poids croissant
+    # edges est une liste de tuples (u, v, weight)
+    sorted_edges = sorted(edges, key=lambda x: x[2])
+    
+    uf = UnionFind(nodes)
+    
+    for u, v, weight in sorted_edges:
+        # Si u et v ne sont pas dans le même ensemble (ne forment pas de cycle)
+        if uf.union(u, v):
+            mst.append((u, v, weight))
+            
+    # Vérification de la connexité
+    # Pour un graphe connexe de V nœuds, un MST doit avoir V-1 arêtes
+    if len(mst) != len(nodes) - 1:
+        # Graphe non connexe ou arêtes manquantes
+        pass
+        
+    return mst
 
 
 class UnionFind:
@@ -96,7 +158,8 @@ class UnionFind:
         Args:
             elements: Liste des éléments initiaux.
         """
-        raise NotImplementedError("La méthode __init__ doit être implémentée.")
+        self.parent: Dict[str, str] = {element: element for element in elements}
+        self.rank: Dict[str, int] = {element: 0 for element in elements}
 
     def find(self, x: str) -> str:
         """
@@ -110,7 +173,9 @@ class UnionFind:
         Returns:
             Le représentant de l'ensemble contenant x.
         """
-        raise NotImplementedError("La méthode find doit être implémentée.")
+        if self.parent[x] != x:
+            self.parent[x] = self.find(self.parent[x])
+        return self.parent[x]
 
     def union(self, x: str, y: str) -> bool:
         """
@@ -126,4 +191,19 @@ class UnionFind:
             True si les ensembles étaient différents et ont été fusionnés,
             False si x et y étaient déjà dans le même ensemble.
         """
-        raise NotImplementedError("La méthode union doit être implémentée.")
+        root_x = self.find(x)
+        root_y = self.find(y)
+
+        if root_x == root_y:
+            return False
+
+        # Union par rang
+        if self.rank[root_x] < self.rank[root_y]:
+            self.parent[root_x] = root_y
+        elif self.rank[root_x] > self.rank[root_y]:
+            self.parent[root_y] = root_x
+        else:
+            self.parent[root_y] = root_x
+            self.rank[root_x] += 1
+        
+        return True

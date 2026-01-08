@@ -9,18 +9,18 @@
 - [x] Implémenter `Graph.load_data` (Chargement du réseau routier)
 
 ## 2. Algorithmes de Parcours
-- [ ] Implémenter `bfs` (Parcours en Largeur)
-- [ ] Implémenter `dfs` (Parcours en Profondeur)
+- [x] Implémenter `bfs` (Parcours en Largeur)
+- [x] Implémenter `dfs` (Parcours en Profondeur)
 
 ## 3. Algorithmes de Plus Court Chemin
-- [ ] Implémenter `dijkstra` (Poids positifs)
-- [ ] Implémenter `bellman_ford` (Poids négatifs)
-- [ ] Implémenter `floyd_warshall` (Toutes paires)
+- [x] Implémenter `dijkstra` (Poids positifs)
+- [x] Implémenter `bellman_ford` (Poids négatifs)
+- [x] Implémenter `floyd_warshall` (Toutes paires)
 
 ## 4. Arbre Couvrant Minimum (MST)
-- [ ] Implémenter la structure `UnionFind` (`find`, `union`)
-- [ ] Implémenter `prim`
-- [ ] Implémenter `kruskal`
+- [x] Implémenter la structure `UnionFind` (`find`, `union`)
+- [x] Implémenter `prim`
+- [x] Implémenter `kruskal`
 
 ## 5. Ordonnancement PERT
 - [ ] Implémenter `PertScheduler.add_task`
