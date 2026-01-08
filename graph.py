@@ -42,8 +42,9 @@ class Graph:
         Args:
             node: L'identifiant du nœud à ajouter (ex: "Paris", "Lyon").
         """
-        raise NotImplementedError("La méthode add_node doit être implémentée.")
-
+        if node not in self.adjacency_list:
+                    self.adjacency_list[node] = {}
+                    
     def add_edge(
         self,
         node1: str,
