@@ -6,6 +6,7 @@ pour trouver l'arbre couvrant de poids minimum dans un graphe.
 """
 
 from typing import List, Tuple, Dict, TYPE_CHECKING
+import heapq
 
 if TYPE_CHECKING:
     from graph import Graph
@@ -42,7 +43,47 @@ def prim(graph: "Graph", start_node: str) -> List[Tuple[str, str, float]]:
         Complexité: O(E log V) avec une file de priorité.
         Le graphe doit être connexe pour avoir un arbre couvrant.
     """
-    raise NotImplementedError("L'algorithme de Prim doit être implémenté.")
+    visited = {start_node}
+    mst: List[Tuple[str, str, float]] = []
+    # File de priorité : (poids, u, v)
+    # On commence avec les arêtes partant du nœud de départ
+    edges = []
+    
+    # Vérification de l'existence du nœud
+    try:
+        neighbors = graph.get_neighbors(start_node)
+    except KeyError:
+         raise KeyError(f"Le nœud de départ '{start_node}' n'existe pas.")
+
+    for neighbor in neighbors:
+        weight = graph.get_weight(start_node, neighbor)
+        if weight is None: continue
+        heapq.heappush(edges, (weight, start_node, neighbor))
+    
+    expected_nodes_count = len(graph.get_nodes())
+    
+    while edges:
+        weight, u, v = heapq.heappop(edges)
+        
+        if v in visited:
+            continue
+            
+        visited.add(v)
+        mst.append((u, v, weight))
+        
+        for next_neighbor in graph.get_neighbors(v):
+            if next_neighbor not in visited:
+                next_weight = graph.get_weight(v, next_neighbor)
+                if next_weight is None: continue
+                heapq.heappush(edges, (next_weight, v, next_neighbor))
+                
+    # Vérification de la connexité (si graphe non connexe, on n'aura pas tous les nœuds)
+    if len(visited) != expected_nodes_count:
+        # Note : Pour un MST strict, on devrait lever une erreur ou gérer les composantes connexes.
+        # Ici on retourne ce qu'on a trouvé (MST de la composante connexe du start_node).
+        pass
+        
+    return mst
 
 
 def kruskal(graph: "Graph") -> List[Tuple[str, str, float]]:
@@ -74,7 +115,28 @@ def kruskal(graph: "Graph") -> List[Tuple[str, str, float]]:
         Complexité: O(E log E) ou O(E log V) avec Union-Find optimisé.
         Nécessite une structure Union-Find pour la détection de cycles.
     """
-    raise NotImplementedError("L'algorithme de Kruskal doit être implémenté.")
+    mst: List[Tuple[str, str, float]] = []
+    edges = graph.get_edges()
+    nodes = graph.get_nodes()
+    
+    # Tri des arêtes par poids croissant
+    # edges est une liste de tuples (u, v, weight)
+    sorted_edges = sorted(edges, key=lambda x: x[2])
+    
+    uf = UnionFind(nodes)
+    
+    for u, v, weight in sorted_edges:
+        # Si u et v ne sont pas dans le même ensemble (ne forment pas de cycle)
+        if uf.union(u, v):
+            mst.append((u, v, weight))
+            
+    # Vérification de la connexité
+    # Pour un graphe connexe de V nœuds, un MST doit avoir V-1 arêtes
+    if len(mst) != len(nodes) - 1:
+        # Graphe non connexe ou arêtes manquantes
+        pass
+        
+    return mst
 
 
 class UnionFind:

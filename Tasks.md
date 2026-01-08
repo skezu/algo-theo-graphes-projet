@@ -19,8 +19,8 @@
 
 ## 4. Arbre Couvrant Minimum (MST)
 - [x] Implémenter la structure `UnionFind` (`find`, `union`)
-- [ ] Implémenter `prim`
-- [ ] Implémenter `kruskal`
+- [x] Implémenter `prim`
+- [x] Implémenter `kruskal`
 
 ## 5. Ordonnancement PERT
 - [ ] Implémenter `PertScheduler.add_task`
