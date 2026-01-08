@@ -114,7 +114,8 @@ class Graph:
         Returns:
             Liste de tous les identifiants de nœuds.
         """
-        raise NotImplementedError("La méthode get_nodes doit être implémentée.")
+        # On retourne simplement la liste des clés du dictionnaire principal
+        return list(self.adjacency_list.keys())
 
     def get_edges(self) -> List[Tuple[str, str, float]]:
         """
@@ -124,7 +125,22 @@ class Graph:
             Liste de tuples (nœud1, nœud2, poids) pour chaque arête.
             Pour un graphe non orienté, chaque arête n'apparaît qu'une fois.
         """
-        raise NotImplementedError("La méthode get_edges doit être implémentée.")
+        edges = []
+        visited_undirected = set()
+
+        for node1 in self.adjacency_list:
+            for node2, weight in self.adjacency_list[node1].items():
+                if not self.directed:
+                    # Pour un graphe non orienté, on évite les doublons (A,B) et (B,A)
+                    edge_id = tuple(sorted((node1, node2)))
+                    if edge_id not in visited_undirected:
+                        edges.append((node1, node2, weight))
+                        visited_undirected.add(edge_id)
+                else:
+                    # Pour un graphe orienté, on ajoute toutes les relations
+                    edges.append((node1, node2, weight))
+        
+        return edges
 
     def load_data(self) -> None:
         """
