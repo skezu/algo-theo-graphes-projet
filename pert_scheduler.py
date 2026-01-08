@@ -89,7 +89,23 @@ class PertScheduler:
         Raises:
             ValueError: Si l'ID existe déjà ou si un prédécesseur n'existe pas.
         """
-        raise NotImplementedError("La méthode add_task doit être implémentée.")
+        if task_id in self.tasks:
+            raise ValueError(f"La tâche {task_id} existe déjà.")
+
+        if predecessors is None:
+            predecessors = []
+
+        for pred_id in predecessors:
+            if pred_id not in self.tasks:
+                raise ValueError(f"Le prédécesseur {pred_id} n'existe pas.")
+
+        task = Task(
+            id=task_id,
+            name=name,
+            duration=duration,
+            predecessors=predecessors
+        )
+        self.tasks[task_id] = task
 
     def calculate_earliest_dates(self) -> Dict[str, Tuple[float, float]]:
         """

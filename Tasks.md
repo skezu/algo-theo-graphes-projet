@@ -23,7 +23,7 @@
 - [x] Implémenter `kruskal`
 
 ## 5. Ordonnancement PERT
-- [ ] Implémenter `PertScheduler.add_task`
+- [x] Implémenter `PertScheduler.add_task`
 - [ ] Implémenter `PertScheduler.calculate_earliest_dates`
 - [ ] Implémenter `PertScheduler.calculate_latest_dates`
 - [ ] Implémenter `PertScheduler.calculate_floats`
