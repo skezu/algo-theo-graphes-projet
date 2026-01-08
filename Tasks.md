@@ -1,12 +1,12 @@
 # Tâches du Projet ALMF51 - Algorithmes de Graphes
 
 ## 1. Structure de Données (Priorité Haute)
-- [ ] Implémenter `Graph.add_node`
-- [ ] Implémenter `Graph.add_edge`
-- [ ] Implémenter `Graph.get_neighbors`
-- [ ] Implémenter `Graph.get_weight`
-- [ ] Implémenter `Graph.get_nodes` et `Graph.get_edges`
-- [ ] Implémenter `Graph.load_data` (Chargement du réseau routier)
+- [x] Implémenter `Graph.add_node`
+- [x] Implémenter `Graph.add_edge`
+- [x] Implémenter `Graph.get_neighbors`
+- [x] Implémenter `Graph.get_weight`
+- [x] Implémenter `Graph.get_nodes` et `Graph.get_edges`
+- [x] Implémenter `Graph.load_data` (Chargement du réseau routier)
 
 ## 2. Algorithmes de Parcours
 - [ ] Implémenter `bfs` (Parcours en Largeur)
