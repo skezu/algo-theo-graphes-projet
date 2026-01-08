@@ -5,7 +5,7 @@ Ce module contient les implémentations des algorithmes classiques
 pour trouver l'arbre couvrant de poids minimum dans un graphe.
 """
 
-from typing import List, Tuple, TYPE_CHECKING
+from typing import List, Tuple, Dict, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from graph import Graph
@@ -96,7 +96,8 @@ class UnionFind:
         Args:
             elements: Liste des éléments initiaux.
         """
-        raise NotImplementedError("La méthode __init__ doit être implémentée.")
+        self.parent: Dict[str, str] = {element: element for element in elements}
+        self.rank: Dict[str, int] = {element: 0 for element in elements}
 
     def find(self, x: str) -> str:
         """
@@ -110,7 +111,9 @@ class UnionFind:
         Returns:
             Le représentant de l'ensemble contenant x.
         """
-        raise NotImplementedError("La méthode find doit être implémentée.")
+        if self.parent[x] != x:
+            self.parent[x] = self.find(self.parent[x])
+        return self.parent[x]
 
     def union(self, x: str, y: str) -> bool:
         """
@@ -126,4 +129,19 @@ class UnionFind:
             True si les ensembles étaient différents et ont été fusionnés,
             False si x et y étaient déjà dans le même ensemble.
         """
-        raise NotImplementedError("La méthode union doit être implémentée.")
+        root_x = self.find(x)
+        root_y = self.find(y)
+
+        if root_x == root_y:
+            return False
+
+        # Union par rang
+        if self.rank[root_x] < self.rank[root_y]:
+            self.parent[root_x] = root_y
+        elif self.rank[root_x] > self.rank[root_y]:
+            self.parent[root_y] = root_x
+        else:
+            self.parent[root_y] = root_x
+            self.rank[root_x] += 1
+        
+        return True

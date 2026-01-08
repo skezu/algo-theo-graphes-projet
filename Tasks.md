@@ -18,7 +18,7 @@
 - [x] Implémenter `floyd_warshall` (Toutes paires)
 
 ## 4. Arbre Couvrant Minimum (MST)
-- [ ] Implémenter la structure `UnionFind` (`find`, `union`)
+- [x] Implémenter la structure `UnionFind` (`find`, `union`)
 - [ ] Implémenter `prim`
 - [ ] Implémenter `kruskal`
 
