@@ -44,7 +44,7 @@ class Graph:
         """
         if node not in self.adjacency_list:
                     self.adjacency_list[node] = {}
-                    
+
     def add_edge(
         self,
         node1: str,
@@ -53,17 +53,19 @@ class Graph:
     ) -> None:
         """
         Ajoute une arête entre deux nœuds avec un poids optionnel.
-
-        Si le graphe est non orienté, l'arête est ajoutée dans les deux sens.
-        Les nœuds sont créés automatiquement s'ils n'existent pas.
-
-        Args:
-            node1: Le premier nœud (source si orienté).
-            node2: Le second nœud (destination si orienté).
-            weight: Le poids de l'arête (distance en km pour le réseau routier).
-                   Par défaut 1.0.
         """
-        raise NotImplementedError("La méthode add_edge doit être implémentée.")
+        # S'assurer que les deux nœuds existent dans le graphe
+        # On réutilise la méthode add_node implémentée précédemment
+        self.add_node(node1)
+        self.add_node(node2)
+
+        # Ajout de l'arête du nœud1 vers le nœud2
+        self.adjacency_list[node1][node2] = weight
+
+        # Si le graphe est non orienté (directed=False), 
+        # on ajoute l'arête dans l'autre sens (nœud2 vers nœud1)
+        if not self.directed:
+            self.adjacency_list[node2][node1] = weight
 
     def get_neighbors(self, node: str) -> List[str]:
         """
@@ -78,7 +80,13 @@ class Graph:
         Raises:
             KeyError: Si le nœud n'existe pas dans le graphe.
         """
-        raise NotImplementedError("La méthode get_neighbors doit être implémentée.")
+        # On vérifie d'abord si le nœud existe dans notre dictionnaire d'adjacence
+        if node not in self.adjacency_list:
+            raise KeyError(f"Le nœud '{node}' n'existe pas dans le graphe.")
+        
+        # On retourne les clés du dictionnaire interne associé au nœud
+        # Ces clés représentent les identifiants des voisins
+        return list(self.adjacency_list[node].keys())
 
     def get_weight(self, node1: str, node2: str) -> Optional[float]:
         """
