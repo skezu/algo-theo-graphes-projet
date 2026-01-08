@@ -99,8 +99,14 @@ class Graph:
         Returns:
             Le poids de l'arête, ou None si l'arête n'existe pas.
         """
-        raise NotImplementedError("La méthode get_weight doit être implémentée.")
-
+        # On vérifie si node1 existe et si node2 est bien dans ses voisins
+        if node1 in self.adjacency_list and node2 in self.adjacency_list[node1]:
+            # On retourne la valeur stockée (le poids/la distance)
+            return self.adjacency_list[node1][node2]
+        
+        # Si le nœud source n'existe pas ou s'il n'y a pas d'arête vers node2
+        return None
+    
     def get_nodes(self) -> List[str]:
         """
         Retourne la liste de tous les nœuds du graphe.
