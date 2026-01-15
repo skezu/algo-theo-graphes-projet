@@ -1,199 +1,507 @@
 """
-Module algorithms_trace.py - Instrumented algorithms for visualization.
+Module algorithms_trace.py - Traced versions of graph algorithms.
+
+This module provides versions of the graph algorithms that return
+a step-by-step trace of their execution for visualization purposes.
 """
 
-from typing import List, Dict, Any, Set, Optional, Tuple
+from typing import List, Dict, Tuple, Any, Optional
 from collections import deque
-import heapq
 from graph import Graph
 
-def trace_bfs(graph: Graph, start_node: str) -> List[Dict[str, Any]]:
-    """BFS with step tracing."""
-    trace = []
-    
-    if start_node not in graph.get_nodes():
-        return [{"type": "error", "message": f"Start node {start_node} not found"}]
 
+class Step:
+    """Represents a single step in algorithm execution."""
+    
+    def __init__(
+        self,
+        step_type: str,
+        target_id: str,
+        description: str,
+        data: Optional[Dict[str, Any]] = None
+    ):
+        self.type = step_type
+        self.target_id = target_id
+        self.description = description
+        self.data = data or {}
+    
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "type": self.type,
+            "targetId": self.target_id,
+            "description": self.description,
+            "data": self.data
+        }
+
+
+def traced_bfs(graph: Graph, start_node: str) -> Tuple[List[str], List[Dict]]:
+    """
+    BFS with execution trace.
+    
+    Returns:
+        Tuple of (visit_order, trace_steps)
+    """
+    if start_node not in graph.adjacency_list:
+        raise KeyError(f"Node '{start_node}' not found")
+    
     visited = {start_node}
     queue = deque([start_node])
+    path = []
+    steps = []
     
-    trace.append({
-        "type": "start",
-        "description": f"Starting BFS from {start_node}",
-        "nodeId": start_node
-    })
-
+    steps.append(Step(
+        "init",
+        start_node,
+        f"Starting BFS from '{start_node}'"
+    ).to_dict())
+    
     while queue:
-        current_node = queue.popleft()
+        current = queue.popleft()
+        path.append(current)
         
-        trace.append({
-            "type": "visit_node",
-            "nodeId": current_node,
-            "description": f"Visiting {current_node}"
-        })
-
-        neighbors = graph.get_neighbors(current_node)
-        for neighbor in neighbors:
-            trace.append({
-                "type": "check_neighbor",
-                "source": current_node,
-                "target": neighbor,
-                "description": f"Checking neighbor {neighbor} of {current_node}"
-            })
+        steps.append(Step(
+            "visit_node",
+            current,
+            f"Visiting node '{current}'",
+            {"visitOrder": len(path)}
+        ).to_dict())
+        
+        for neighbor in graph.get_neighbors(current):
+            edge_id = f"{current}-{neighbor}"
+            
+            steps.append(Step(
+                "explore_edge",
+                edge_id,
+                f"Exploring edge {current} → {neighbor}"
+            ).to_dict())
             
             if neighbor not in visited:
                 visited.add(neighbor)
                 queue.append(neighbor)
-                trace.append({
-                    "type": "add_to_queue",
-                    "nodeId": neighbor,
-                    "description": f"Adding {neighbor} to queue"
-                })
-            else:
-                 trace.append({
-                    "type": "skip",
-                    "nodeId": neighbor,
-                    "description": f"{neighbor} already visited"
-                })
-
-    trace.append({"type": "complete", "description": "BFS Traversal Complete"})
-    return trace
-
-def trace_dfs(graph: Graph, start_node: str) -> List[Dict[str, Any]]:
-    """DFS with step tracing."""
-    trace = []
+                
+                steps.append(Step(
+                    "enqueue",
+                    neighbor,
+                    f"Adding '{neighbor}' to queue",
+                    {"queueSize": len(queue)}
+                ).to_dict())
     
-    if start_node not in graph.get_nodes():
-        return [{"type": "error", "message": f"Start node {start_node} not found"}]
+    steps.append(Step(
+        "complete",
+        "",
+        f"BFS complete. Visited {len(path)} nodes.",
+        {"visitOrder": path}
+    ).to_dict())
+    
+    return path, steps
 
+
+def traced_dfs(graph: Graph, start_node: str) -> Tuple[List[str], List[Dict]]:
+    """
+    DFS with execution trace.
+    
+    Returns:
+        Tuple of (visit_order, trace_steps)
+    """
+    if start_node not in graph.adjacency_list:
+        raise KeyError(f"Node '{start_node}' not found")
+    
     visited = set()
     stack = [start_node]
+    path = []
+    steps = []
     
-    trace.append({
-        "type": "start",
-        "description": f"Starting DFS from {start_node}",
-        "nodeId": start_node
-    })
-
+    steps.append(Step(
+        "init",
+        start_node,
+        f"Starting DFS from '{start_node}'"
+    ).to_dict())
+    
     while stack:
-        current_node = stack.pop()
+        current = stack.pop()
         
-        if current_node not in visited:
-            visited.add(current_node)
-            trace.append({
-                "type": "visit_node",
-                "nodeId": current_node,
-                "description": f"Visiting {current_node}"
-            })
-
-            neighbors = graph.get_neighbors(current_node)
-            # Reverse to mimic stack behavior (right-to-left processing)
-            for neighbor in reversed(neighbors):
-                trace.append({
-                    "type": "check_neighbor",
-                    "source": current_node,
-                    "target": neighbor,
-                    "description": f"Checking neighbor {neighbor}"
-                })
-                
-                if neighbor not in visited:
-                    stack.append(neighbor)
-                    trace.append({
-                        "type": "add_to_stack",
-                        "nodeId": neighbor,
-                        "description": f"Adding {neighbor} to stack"
-                    })
-                else:
-                    trace.append({
-                        "type": "skip",
-                        "nodeId": neighbor,
-                        "description": f"{neighbor} already visited"
-                    })
-                    
-    trace.append({"type": "complete", "description": "DFS Traversal Complete"})
-    return trace
-
-def trace_dijkstra(graph: Graph, start: str, end: str) -> List[Dict[str, Any]]:
-    """Dijkstra with step tracing."""
-    trace = []
-    nodes = graph.get_nodes()
-    
-    if start not in nodes or end not in nodes:
-        return [{"type": "error", "message": "Start or End node not found"}]
-
-    distances = {node: float('inf') for node in nodes}
-    distances[start] = 0.0
-    previous = {node: None for node in nodes}
-    pq = [(0.0, start)]
-    
-    trace.append({
-        "type": "start",
-        "description": f"Starting Dijkstra from {start} to {end}",
-        "nodeId": start,
-        "distances": distances.copy()
-    })
-
-    visited_process = set()
-
-    while pq:
-        current_dist, current_node = heapq.heappop(pq)
-        
-        if current_dist > distances[current_node]:
+        if current in visited:
             continue
             
-        trace.append({
-            "type": "visit_node",
-            "nodeId": current_node,
-            "currentDist": current_dist,
-            "description": f"Processing {current_node} (dist: {current_dist})"
-        })
+        visited.add(current)
+        path.append(current)
         
-        if current_node == end:
-            trace.append({"type": "found_target", "nodeId": end, "description": "Target reached!"})
-            break
-
-        visited_process.add(current_node)
-
-        for neighbor in graph.get_neighbors(current_node):
-            weight = graph.get_weight(current_node, neighbor)
-            if weight is None: continue
+        steps.append(Step(
+            "visit_node",
+            current,
+            f"Visiting node '{current}'",
+            {"visitOrder": len(path)}
+        ).to_dict())
+        
+        neighbors = graph.get_neighbors(current)
+        for neighbor in reversed(neighbors):
+            edge_id = f"{current}-{neighbor}"
             
-            trace.append({
-                "type": "check_edge",
-                "source": current_node,
-                "target": neighbor,
-                "weight": weight,
-                "description": f"Checking edge {current_node}->{neighbor} (w={weight})"
-            })
+            steps.append(Step(
+                "explore_edge",
+                edge_id,
+                f"Exploring edge {current} → {neighbor}"
+            ).to_dict())
+            
+            if neighbor not in visited:
+                stack.append(neighbor)
+                
+                steps.append(Step(
+                    "push_stack",
+                    neighbor,
+                    f"Pushing '{neighbor}' to stack",
+                    {"stackSize": len(stack)}
+                ).to_dict())
+    
+    steps.append(Step(
+        "complete",
+        "",
+        f"DFS complete. Visited {len(path)} nodes.",
+        {"visitOrder": path}
+    ).to_dict())
+    
+    return path, steps
 
+
+def traced_dijkstra(
+    graph: Graph,
+    start_node: str,
+    end_node: Optional[str] = None
+) -> Tuple[Dict[str, float], Dict[str, Optional[str]], List[Dict]]:
+    """
+    Dijkstra with execution trace.
+    
+    Returns:
+        Tuple of (distances, predecessors, trace_steps)
+    """
+    import heapq
+    
+    if start_node not in graph.adjacency_list:
+        raise KeyError(f"Node '{start_node}' not found")
+    
+    nodes = graph.get_nodes()
+    distances = {node: float('inf') for node in nodes}
+    distances[start_node] = 0
+    predecessors = {node: None for node in nodes}
+    visited = set()
+    priority_queue = [(0, start_node)]
+    steps = []
+    
+    steps.append(Step(
+        "init",
+        start_node,
+        f"Starting Dijkstra from '{start_node}'",
+        {"target": end_node}
+    ).to_dict())
+    
+    while priority_queue:
+        current_dist, current = heapq.heappop(priority_queue)
+        
+        if current in visited:
+            continue
+        
+        visited.add(current)
+        
+        steps.append(Step(
+            "visit_node",
+            current,
+            f"Processing '{current}' with distance {current_dist}",
+            {"distance": current_dist}
+        ).to_dict())
+        
+        if end_node and current == end_node:
+            # Reconstruct path
+            path = []
+            node = end_node
+            while node:
+                path.append(node)
+                node = predecessors[node]
+            path.reverse()
+            
+            steps.append(Step(
+                "found_path",
+                end_node,
+                f"Found shortest path to '{end_node}'",
+                {"path": path, "distance": distances[end_node]}
+            ).to_dict())
+            break
+        
+        for neighbor in graph.get_neighbors(current):
+            if neighbor in visited:
+                continue
+                
+            edge_id = f"{current}-{neighbor}"
+            weight = graph.get_weight(current, neighbor) or 1
             new_dist = current_dist + weight
+            
+            steps.append(Step(
+                "explore_edge",
+                edge_id,
+                f"Checking edge {current} → {neighbor} (weight: {weight})",
+                {"currentDist": distances[neighbor], "newDist": new_dist}
+            ).to_dict())
+            
             if new_dist < distances[neighbor]:
                 distances[neighbor] = new_dist
-                previous[neighbor] = current_node
-                heapq.heappush(pq, (new_dist, neighbor))
+                predecessors[neighbor] = current
+                heapq.heappush(priority_queue, (new_dist, neighbor))
                 
-                trace.append({
-                    "type": "update_distance",
-                    "nodeId": neighbor,
-                    "newDist": new_dist,
-                    "previous": current_node,
-                    "description": f"Updated {neighbor} distance to {new_dist}"
-                })
+                steps.append(Step(
+                    "update_distance",
+                    neighbor,
+                    f"Updated distance to '{neighbor}': {new_dist}",
+                    {"distance": new_dist, "predecessor": current}
+                ).to_dict())
+    
+    steps.append(Step(
+        "complete",
+        "",
+        "Dijkstra complete.",
+        {"distances": {k: v for k, v in distances.items() if v != float('inf')}}
+    ).to_dict())
+    
+    return distances, predecessors, steps
 
-    # Reconstruct path
-    path = []
-    curr = end
-    if distances[end] != float('inf'):
-        while curr:
-            path.append(curr)
-            curr = previous[curr]
-        path.reverse()
-        trace.append({
-            "type": "path_found",
-            "path": path,
-            "description": f"Shortest path found: {' -> '.join(path)}"
-        })
-    else:
-        trace.append({"type": "no_path", "description": "No path found"})
 
-    return trace
+def traced_prim(graph: Graph, start_node: str) -> Tuple[List[Tuple[str, str, float]], List[Dict]]:
+    """
+    Prim's MST algorithm with execution trace.
+    
+    Returns:
+        Tuple of (mst_edges, trace_steps)
+    """
+    import heapq
+    
+    if start_node not in graph.adjacency_list:
+        raise KeyError(f"Node '{start_node}' not found")
+    
+    visited = {start_node}
+    mst_edges = []
+    steps = []
+    
+    # Priority queue: (weight, from_node, to_node)
+    edges = []
+    for neighbor in graph.get_neighbors(start_node):
+        weight = graph.get_weight(start_node, neighbor) or 1
+        heapq.heappush(edges, (weight, start_node, neighbor))
+    
+    steps.append(Step(
+        "init",
+        start_node,
+        f"Starting Prim's algorithm from '{start_node}'"
+    ).to_dict())
+    
+    total_weight = 0
+    
+    while edges and len(visited) < len(graph.get_nodes()):
+        weight, from_node, to_node = heapq.heappop(edges)
+        edge_id = f"{from_node}-{to_node}"
+        
+        if to_node in visited:
+            steps.append(Step(
+                "skip_edge",
+                edge_id,
+                f"Skipping edge {from_node} → {to_node} (already visited)"
+            ).to_dict())
+            continue
+        
+        visited.add(to_node)
+        mst_edges.append((from_node, to_node, weight))
+        total_weight += weight
+        
+        steps.append(Step(
+            "add_edge",
+            edge_id,
+            f"Adding edge {from_node} → {to_node} (weight: {weight})",
+            {"totalWeight": total_weight, "edgeCount": len(mst_edges)}
+        ).to_dict())
+        
+        steps.append(Step(
+            "visit_node",
+            to_node,
+            f"Including '{to_node}' in MST",
+            {"visitedCount": len(visited)}
+        ).to_dict())
+        
+        for neighbor in graph.get_neighbors(to_node):
+            if neighbor not in visited:
+                neighbor_weight = graph.get_weight(to_node, neighbor) or 1
+                heapq.heappush(edges, (neighbor_weight, to_node, neighbor))
+    
+    steps.append(Step(
+        "complete",
+        "",
+        f"Prim's algorithm complete. MST has {len(mst_edges)} edges.",
+        {"totalWeight": total_weight, "edges": [(e[0], e[1], e[2]) for e in mst_edges]}
+    ).to_dict())
+    
+    return mst_edges, steps
+
+
+def traced_kruskal(graph: Graph) -> Tuple[List[Tuple[str, str, float]], List[Dict]]:
+    """
+    Kruskal's MST algorithm with execution trace.
+    
+    Returns:
+        Tuple of (mst_edges, trace_steps)
+    """
+    # Union-Find data structure
+    parent = {}
+    rank = {}
+    
+    def find(node):
+        if parent[node] != node:
+            parent[node] = find(parent[node])
+        return parent[node]
+    
+    def union(node1, node2):
+        root1, root2 = find(node1), find(node2)
+        if root1 != root2:
+            if rank[root1] < rank[root2]:
+                parent[root1] = root2
+            elif rank[root1] > rank[root2]:
+                parent[root2] = root1
+            else:
+                parent[root2] = root1
+                rank[root1] += 1
+            return True
+        return False
+    
+    nodes = graph.get_nodes()
+    for node in nodes:
+        parent[node] = node
+        rank[node] = 0
+    
+    edges = graph.get_edges()
+    edges.sort(key=lambda x: x[2])
+    
+    mst_edges = []
+    steps = []
+    
+    steps.append(Step(
+        "init",
+        "",
+        f"Starting Kruskal's algorithm. Sorted {len(edges)} edges by weight."
+    ).to_dict())
+    
+    total_weight = 0
+    
+    for node1, node2, weight in edges:
+        edge_id = f"{node1}-{node2}"
+        
+        steps.append(Step(
+            "explore_edge",
+            edge_id,
+            f"Considering edge {node1} — {node2} (weight: {weight})"
+        ).to_dict())
+        
+        if union(node1, node2):
+            mst_edges.append((node1, node2, weight))
+            total_weight += weight
+            
+            steps.append(Step(
+                "add_edge",
+                edge_id,
+                f"Adding edge {node1} — {node2} to MST",
+                {"totalWeight": total_weight, "edgeCount": len(mst_edges)}
+            ).to_dict())
+        else:
+            steps.append(Step(
+                "skip_edge",
+                edge_id,
+                f"Skipping edge {node1} — {node2} (would create cycle)"
+            ).to_dict())
+        
+        if len(mst_edges) == len(nodes) - 1:
+            break
+    
+    steps.append(Step(
+        "complete",
+        "",
+        f"Kruskal's algorithm complete. MST has {len(mst_edges)} edges.",
+        {"totalWeight": total_weight, "edges": [(e[0], e[1], e[2]) for e in mst_edges]}
+    ).to_dict())
+    
+    return mst_edges, steps
+
+
+def traced_bellman_ford(
+    graph: Graph,
+    start_node: str
+) -> Tuple[Dict[str, float], Dict[str, Optional[str]], bool, List[Dict]]:
+    """
+    Bellman-Ford with execution trace.
+    
+    Returns:
+        Tuple of (distances, predecessors, has_negative_cycle, trace_steps)
+    """
+    if start_node not in graph.adjacency_list:
+        raise KeyError(f"Node '{start_node}' not found")
+    
+    nodes = graph.get_nodes()
+    edges = graph.get_edges()
+    
+    distances = {node: float('inf') for node in nodes}
+    distances[start_node] = 0
+    predecessors = {node: None for node in nodes}
+    steps = []
+    
+    steps.append(Step(
+        "init",
+        start_node,
+        f"Starting Bellman-Ford from '{start_node}'"
+    ).to_dict())
+    
+    # Relax edges |V| - 1 times
+    for iteration in range(len(nodes) - 1):
+        updated = False
+        
+        steps.append(Step(
+            "iteration",
+            "",
+            f"Iteration {iteration + 1}/{len(nodes) - 1}"
+        ).to_dict())
+        
+        for u, v, weight in edges:
+            edge_id = f"{u}-{v}"
+            
+            if distances[u] != float('inf') and distances[u] + weight < distances[v]:
+                distances[v] = distances[u] + weight
+                predecessors[v] = u
+                updated = True
+                
+                steps.append(Step(
+                    "update_distance",
+                    v,
+                    f"Relaxed edge {u} → {v}: new distance = {distances[v]}",
+                    {"distance": distances[v], "predecessor": u}
+                ).to_dict())
+        
+        if not updated:
+            steps.append(Step(
+                "early_stop",
+                "",
+                f"No updates in iteration {iteration + 1}. Stopping early."
+            ).to_dict())
+            break
+    
+    # Check for negative cycles
+    has_negative_cycle = False
+    for u, v, weight in edges:
+        if distances[u] != float('inf') and distances[u] + weight < distances[v]:
+            has_negative_cycle = True
+            steps.append(Step(
+                "negative_cycle",
+                f"{u}-{v}",
+                f"Negative cycle detected via edge {u} → {v}"
+            ).to_dict())
+            break
+    
+    steps.append(Step(
+        "complete",
+        "",
+        "Bellman-Ford complete." + (" (Negative cycle detected!)" if has_negative_cycle else ""),
+        {"distances": {k: v for k, v in distances.items() if v != float('inf')}}
+    ).to_dict())
+    
+    return distances, predecessors, has_negative_cycle, steps

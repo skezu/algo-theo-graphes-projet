@@ -1,100 +1,137 @@
-import { useMemo } from 'react';
-import { ReactFlow, Background, Controls, MiniMap, type Node, type Edge } from '@xyflow/react';
+/**
+ * Graph canvas component using React Flow.
+ */
+import { useCallback, useEffect } from 'react';
+import {
+    ReactFlow,
+    Background,
+    Controls,
+    MiniMap,
+    useNodesState,
+    useEdgesState,
+    type Node,
+    type Edge,
+    ConnectionMode,
+} from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { useStore } from '../store';
+import { useAppStore } from '@/lib/store';
+import GraphNode from './GraphNode';
 
-const GraphCanvas = () => {
-    const { nodes, edges, trace, currentStepIndex } = useStore();
+const nodeTypes = {
+    default: GraphNode,
+};
 
-    const { derivedNodes, derivedEdges } = useMemo(() => {
-        // Deep copy to avoid mutating store state directly in the view logic
-        const dNodes: Node[] = nodes.map(n => ({
-            ...n,
-            style: {
-                background: '#fff',
-                border: '1px solid #777',
-                width: 50,
-                height: 50,
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: 'bold',
-                zIndex: 1
-            }
-        }));
+interface GraphNodeData extends Record<string, unknown> {
+    label: string;
+}
 
-        const dEdges: Edge[] = edges.map(e => ({
-            ...e,
-            animated: false,
-            style: { stroke: '#b1b1b7', strokeWidth: 2 },
-            labelStyle: { fill: '#b1b1b7', fontWeight: 700 }
-        }));
+export default function GraphCanvas() {
+    const {
+        nodes: storeNodes,
+        edges: storeEdges,
+        exploredEdges,
+        pathEdges,
+        mstEdges,
+        isGraphLoaded,
+    } = useAppStore();
 
-        const visitedNodes = new Set<string>();
-        let processingNode: string | null = null;
-        let processingEdge: string | null = null;
+    const [nodes, setNodes, onNodesChange] = useNodesState<Node<GraphNodeData>>([]);
+    const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
-        // Replay trace up to current step
-        for (let i = 0; i <= currentStepIndex; i++) {
-            const step = trace[i];
-            if (!step) break;
-
-            if (step.type === 'visit_node' && step.nodeId) {
-                visitedNodes.add(step.nodeId);
-                processingNode = step.nodeId; // Highlights current
-            }
-            if (step.type === 'check_neighbor' || step.type === 'check_edge') {
-                if (step.source && step.target) {
-                    processingEdge = `${step.source}-${step.target}`;
-                }
-            }
-            if (step.type === 'path_found' && step.path) {
-                // Highlight final path
-                step.path.forEach(n => visitedNodes.add(n));
-            }
+    // Update nodes from store
+    useEffect(() => {
+        if (storeNodes.length > 0) {
+            const updatedNodes = storeNodes.map(node => ({
+                ...node,
+                type: 'default' as const,
+                data: node.data as GraphNodeData,
+            }));
+            setNodes(updatedNodes);
         }
+    }, [storeNodes, setNodes]);
 
-        // Apply styles
-        dNodes.forEach(n => {
-            if (processingNode === n.id) {
-                n.style = { ...n.style, background: '#ffeb3b', borderColor: '#f59e0b', transform: 'scale(1.2)', zIndex: 10 };
-            } else if (visitedNodes.has(n.id)) {
-                n.style = { ...n.style, background: '#4ade80', borderColor: '#16a34a' };
-            }
+    // Update edges with styling based on algorithm state
+    useEffect(() => {
+        if (storeEdges.length > 0) {
+            const updatedEdges: Edge[] = storeEdges.map(edge => {
+                let className = '';
+                let style: React.CSSProperties = {
+                    stroke: 'hsl(217 19% 27%)',
+                    strokeWidth: 2,
+                    transition: 'stroke 0.3s ease, stroke-width 0.3s ease',
+                };
 
-            // Show distance if available in trace (expensive to find last distance update)
-            // For now, simple highlighting.
-        });
+                // Check if edge is in MST
+                if (mstEdges.has(edge.id) || mstEdges.has(`${edge.target}-${edge.source}`)) {
+                    className = 'edge-mst';
+                    style = { ...style, stroke: 'hsl(142 76% 36%)', strokeWidth: 4 };
+                }
+                // Check if edge is in final path
+                else if (pathEdges.has(edge.id) || pathEdges.has(`${edge.target}-${edge.source}`)) {
+                    className = 'edge-path';
+                    style = { ...style, stroke: 'hsl(231 97% 66%)', strokeWidth: 4 };
+                }
+                // Check if edge was explored
+                else if (exploredEdges.has(edge.id) || exploredEdges.has(`${edge.target}-${edge.source}`)) {
+                    className = 'edge-explored';
+                    style = { ...style, stroke: 'hsl(43 96% 56%)', strokeWidth: 3 };
+                }
 
-        dEdges.forEach(e => {
-            const isForward = e.source + '-' + e.target === processingEdge;
-            const isReverse = e.target + '-' + e.source === processingEdge;
+                return {
+                    ...edge,
+                    className,
+                    style,
+                    label: edge.label,
+                    labelStyle: { fill: 'hsl(var(--foreground))', fontWeight: 500, fontSize: 12 },
+                    labelBgStyle: { fill: 'hsl(var(--background))', fillOpacity: 0.8 },
+                    labelBgPadding: [4, 8] as [number, number],
+                    labelBgBorderRadius: 4,
+                };
+            });
+            setEdges(updatedEdges);
+        }
+    }, [storeEdges, exploredEdges, pathEdges, mstEdges, setEdges]);
 
-            if (isForward || isReverse) {
-                e.style = { ...e.style, stroke: '#f59e0b', strokeWidth: 4 };
-                e.animated = true;
-                e.zIndex = 10;
-            }
-            // Logic for visited edges could be added here
-        });
+    const onInit = useCallback(() => {
+        console.log('React Flow initialized');
+    }, []);
 
-        return { derivedNodes: dNodes, derivedEdges: dEdges };
-    }, [nodes, edges, trace, currentStepIndex]);
+    if (!isGraphLoaded) {
+        return (
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
+                <div className="text-center">
+                    <div className="text-6xl mb-4">📊</div>
+                    <h2 className="text-2xl font-bold text-white mb-2">Graph Algorithms Visualizer</h2>
+                    <p className="text-slate-400">Load a graph to begin visualization</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div className="w-full h-full bg-slate-50 dark:bg-slate-950">
+        <div className="w-full h-full">
             <ReactFlow
-                nodes={derivedNodes}
-                edges={derivedEdges}
+                nodes={nodes}
+                edges={edges}
+                onNodesChange={onNodesChange}
+                onEdgesChange={onEdgesChange}
+                onInit={onInit}
+                nodeTypes={nodeTypes}
+                connectionMode={ConnectionMode.Loose}
                 fitView
+                fitViewOptions={{ padding: 0.2 }}
+                minZoom={0.1}
+                maxZoom={2}
+                proOptions={{ hideAttribution: true }}
             >
-                <Background />
-                <Controls />
-                <MiniMap />
+                <Background color="hsl(var(--muted-foreground))" gap={20} size={1} />
+                <Controls className="!bg-slate-800 !border-slate-700 !rounded-lg" />
+                <MiniMap
+                    className="!bg-slate-800 !border-slate-700 !rounded-lg"
+                    nodeColor="hsl(var(--primary))"
+                    maskColor="hsl(var(--background) / 0.8)"
+                />
             </ReactFlow>
         </div>
     );
-};
-
-export default GraphCanvas;
+}

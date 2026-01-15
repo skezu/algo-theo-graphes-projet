@@ -37,7 +37,10 @@
 - [ ] Vérifier les résultats sur le graphe routier
 - [ ] Vérifier les résultats sur le projet PERT exemple
 
-## 7. Interface Visuelle (Bonus)
-- [x] Créer l'API Backend (FastAPI) pour exposer les graphes et algorithmes
-- [x] Créer le Frontend (React + React Flow + Shadcn)
-- [x] Implémenter la visualisation des étapes (BFS, DFS, Dijkstra)
+## 7. Interface Visuelle (Nouveau)
+- [x] Créer `api.py` (Serveur FastAPI)
+- [x] Créer `algorithms_trace.py` (Algorithmes avec trace)
+- [x] Créer `requirements.txt` (Dépendances Python)
+- [x] Implémenter le frontend React avec React Flow
+- [x] Implémenter la visualisation dynamique des algorithmes
+- [ ] Tester tous les algorithmes visuellement

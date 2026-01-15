@@ -1,88 +1,305 @@
-import { useState, useEffect } from 'react';
-import { useStore } from '../store';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
+/**
+ * Control panel for algorithm selection and execution.
+ */
+import { useState } from 'react';
+import { Play, Pause, RotateCcw, SkipForward, SkipBack, Loader2 } from 'lucide-react';
+import { Button } from './ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Label } from './ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Slider } from './ui/slider';
+import { useAppStore } from '../lib/store';
+import {
+    loadGraph,
+    getGraphData,
+    runAlgorithm,
+    ALGORITHM_INFO,
+    type AlgorithmName
+} from '../services/api';
+import type { Node, Edge } from '@xyflow/react';
 
-export const ControlPanel = () => {
-    const { nodes, fetchGraph, runAlgorithm } = useStore();
-    const [algo, setAlgo] = useState('bfs');
-    const [startNode, setStartNode] = useState('');
-    const [endNode, setEndNode] = useState('');
-    const [loading, setLoading] = useState(false);
+export default function ControlPanel() {
+    const {
+        isGraphLoaded,
+        availableNodes,
+        selectedAlgorithm,
+        startNode,
+        endNode,
+        steps,
+        playback,
+        setNodes,
+        setEdges,
+        setAvailableNodes,
+        setGraphLoaded,
+        setSelectedAlgorithm,
+        setStartNode,
+        setEndNode,
+        setAlgorithmResult,
+        play,
+        pause,
+        reset,
+        nextStep,
+        setSpeed,
+    } = useAppStore();
 
-    useEffect(() => {
-        setLoading(true);
-        fetchGraph().finally(() => setLoading(false));
-    }, [fetchGraph]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isRunning, setIsRunning] = useState(false);
 
-    useEffect(() => {
-        if (nodes.length > 0 && !startNode) {
-            setStartNode(nodes[0].data.label as string); // Default to first node
-            setEndNode(nodes[nodes.length - 1].data.label as string);
+    const handleLoadGraph = async () => {
+        setIsLoading(true);
+        try {
+            await loadGraph('road_network');
+            const graphData = await getGraphData();
+
+            // Convert to React Flow format
+            const nodes: Node[] = graphData.nodes.map(n => ({
+                id: n.id,
+                position: n.position,
+                data: n.data,
+                type: 'default',
+            }));
+
+            const edges: Edge[] = graphData.edges.map(e => ({
+                id: e.id,
+                source: e.source,
+                target: e.target,
+                label: e.label,
+                data: e.data,
+            }));
+
+            setNodes(nodes);
+            setEdges(edges);
+            setAvailableNodes(graphData.nodes.map(n => n.id));
+            setGraphLoaded(true);
+
+            if (graphData.nodes.length > 0) {
+                setStartNode(graphData.nodes[0].id);
+            }
+        } catch (error) {
+            console.error('Failed to load graph:', error);
+            alert('Failed to load graph. Make sure the backend is running on http://localhost:8000');
+        } finally {
+            setIsLoading(false);
         }
-    }, [nodes, startNode]);
-
-    const handleRun = async () => {
-        if (!startNode) return;
-        await runAlgorithm(algo, startNode, endNode);
     };
 
+    const handleRunAlgorithm = async () => {
+        if (!selectedAlgorithm || !startNode) return;
+
+        setIsRunning(true);
+        reset();
+
+        try {
+            const result = await runAlgorithm(
+                selectedAlgorithm,
+                startNode,
+                ALGORITHM_INFO[selectedAlgorithm].needsEndNode ? endNode : undefined
+            );
+
+            setAlgorithmResult(result.steps, result.result);
+        } catch (error) {
+            console.error('Algorithm failed:', error);
+            alert('Algorithm execution failed.');
+        } finally {
+            setIsRunning(false);
+        }
+    };
+
+    const algorithmInfo = selectedAlgorithm ? ALGORITHM_INFO[selectedAlgorithm] : null;
+
     return (
-        <Card className="absolute top-4 left-4 w-80 shadow-2xl z-20 opacity-90 hover:opacity-100 transition-opacity backdrop-blur">
-            <CardHeader className="pb-3">
-                <CardTitle>Graph Algorithms</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <div className="space-y-2">
-                    <label className="text-xs font-medium">Algorithm</label>
-                    <Select value={algo} onValueChange={setAlgo}>
-                        <SelectTrigger>
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="bfs">BFS (Breadth First)</SelectItem>
-                            <SelectItem value="dfs">DFS (Depth First)</SelectItem>
-                            <SelectItem value="dijkstra">Dijkstra</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
+        <div className="flex flex-col gap-4 p-4 h-full overflow-y-auto">
+            {/* Graph Loading */}
+            <Card className="glass-panel">
+                <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">Graph Data</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <Button
+                        onClick={handleLoadGraph}
+                        disabled={isLoading}
+                        className="w-full"
+                    >
+                        {isLoading ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Loading...
+                            </>
+                        ) : isGraphLoaded ? (
+                            'Reload Graph'
+                        ) : (
+                            'Load Road Network'
+                        )}
+                    </Button>
+                    {isGraphLoaded && (
+                        <p className="text-sm text-muted-foreground mt-2">
+                            {availableNodes.length} nodes loaded
+                        </p>
+                    )}
+                </CardContent>
+            </Card>
 
-                <div className="space-y-2">
-                    <label className="text-xs font-medium">Start Node</label>
-                    <Select value={startNode} onValueChange={setStartNode}>
-                        <SelectTrigger><SelectValue placeholder="Select start" /></SelectTrigger>
-                        <SelectContent>
-                            {nodes.map(n => (
-                                <SelectItem key={n.id} value={n.id}>{n.data.label as string}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                {algo === 'dijkstra' && (
+            {/* Algorithm Selection */}
+            <Card className="glass-panel">
+                <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">Algorithm</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
                     <div className="space-y-2">
-                        <label className="text-xs font-medium">End Node</label>
-                        <Select value={endNode} onValueChange={setEndNode}>
-                            <SelectTrigger><SelectValue placeholder="Select end" /></SelectTrigger>
+                        <Label>Select Algorithm</Label>
+                        <Select
+                            value={selectedAlgorithm || ''}
+                            onValueChange={(v) => setSelectedAlgorithm(v as AlgorithmName)}
+                            disabled={!isGraphLoaded}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Choose an algorithm" />
+                            </SelectTrigger>
                             <SelectContent>
-                                {nodes.map(n => (
-                                    <SelectItem key={n.id} value={n.id}>{n.data.label as string}</SelectItem>
+                                <SelectItem value="bfs">BFS (Breadth-First)</SelectItem>
+                                <SelectItem value="dfs">DFS (Depth-First)</SelectItem>
+                                <SelectItem value="dijkstra">Dijkstra</SelectItem>
+                                <SelectItem value="bellman-ford">Bellman-Ford</SelectItem>
+                                <SelectItem value="prim">Prim's MST</SelectItem>
+                                <SelectItem value="kruskal">Kruskal's MST</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    {algorithmInfo && (
+                        <p className="text-sm text-muted-foreground">
+                            {algorithmInfo.description}
+                        </p>
+                    )}
+
+                    <div className="space-y-2">
+                        <Label>Start Node</Label>
+                        <Select
+                            value={startNode}
+                            onValueChange={setStartNode}
+                            disabled={!isGraphLoaded}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select start" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {availableNodes.map(node => (
+                                    <SelectItem key={node} value={node}>{node}</SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
                     </div>
-                )}
 
-                <Button className="w-full" onClick={handleRun} disabled={loading || (algo === 'dijkstra' && !endNode)}>
-                    {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Run Algorithm"}
-                </Button>
+                    {algorithmInfo?.needsEndNode && (
+                        <div className="space-y-2">
+                            <Label>End Node (optional)</Label>
+                            <Select
+                                value={endNode}
+                                onValueChange={setEndNode}
+                                disabled={!isGraphLoaded}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select end" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {availableNodes.filter(n => n !== startNode).map(node => (
+                                        <SelectItem key={node} value={node}>{node}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
 
-                <div className="text-xs text-muted-foreground pt-2">
-                    {nodes.length} Nodes loaded.
-                </div>
-            </CardContent>
-        </Card>
+                    <Button
+                        onClick={handleRunAlgorithm}
+                        disabled={!selectedAlgorithm || !startNode || isRunning}
+                        className="w-full"
+                    >
+                        {isRunning ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Running...
+                            </>
+                        ) : (
+                            'Run Algorithm'
+                        )}
+                    </Button>
+                </CardContent>
+            </Card>
+
+            {/* Playback Controls */}
+            {steps.length > 0 && (
+                <Card className="glass-panel">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-lg">Playback</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="flex items-center justify-center gap-2">
+                            <Button variant="outline" size="icon" onClick={reset}>
+                                <RotateCcw className="h-4 w-4" />
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => {
+                                    reset();
+                                    const { goToStep } = useAppStore.getState();
+                                    if (playback.currentStepIndex > 0) {
+                                        goToStep(playback.currentStepIndex - 1);
+                                    }
+                                }}
+                            >
+                                <SkipBack className="h-4 w-4" />
+                            </Button>
+                            <Button
+                                size="icon"
+                                onClick={playback.isPlaying ? pause : play}
+                            >
+                                {playback.isPlaying ? (
+                                    <Pause className="h-4 w-4" />
+                                ) : (
+                                    <Play className="h-4 w-4" />
+                                )}
+                            </Button>
+                            <Button variant="outline" size="icon" onClick={nextStep}>
+                                <SkipForward className="h-4 w-4" />
+                            </Button>
+                        </div>
+
+                        <div className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                                <span>Step {playback.currentStepIndex + 1}</span>
+                                <span>of {steps.length}</span>
+                            </div>
+                            <Slider
+                                value={[playback.currentStepIndex + 1]}
+                                min={0}
+                                max={steps.length}
+                                step={1}
+                                onValueChange={([v]) => {
+                                    const { goToStep, clearVisualization } = useAppStore.getState();
+                                    if (v === 0) {
+                                        clearVisualization();
+                                    } else {
+                                        goToStep(v - 1);
+                                    }
+                                }}
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Speed: {playback.speed}ms</Label>
+                            <Slider
+                                value={[playback.speed]}
+                                min={100}
+                                max={2000}
+                                step={100}
+                                onValueChange={([v]) => setSpeed(v)}
+                            />
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+        </div>
     );
-};
+}
