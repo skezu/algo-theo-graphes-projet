@@ -24,11 +24,11 @@
 
 ## 5. Ordonnancement PERT
 - [x] Implémenter `PertScheduler.add_task`
-- [ ] Implémenter `PertScheduler.calculate_earliest_dates`
-- [ ] Implémenter `PertScheduler.calculate_latest_dates`
-- [ ] Implémenter `PertScheduler.calculate_floats`
-- [ ] Implémenter `PertScheduler.get_critical_path`
-- [ ] Implémenter `PertScheduler.get_full_schedule` et `get_project_duration`
+- [x] Implémenter `PertScheduler.calculate_earliest_dates`
+- [x] Implémenter `PertScheduler.calculate_latest_dates`
+- [x] Implémenter `PertScheduler.calculate_floats`
+- [x] Implémenter `PertScheduler.get_critical_path`
+- [x] Implémenter `PertScheduler.get_full_schedule` et `get_project_duration`
 - [ ] Implémenter `PertScheduler.validate_no_cycles`
 - [ ] Implémenter `PertScheduler.load_sample_project`
 
