@@ -27,7 +27,11 @@ function GraphNode({ id, data }: NodeProps<GraphNodeType>) {
 
     return (
         <>
-            <Handle type="target" position={Position.Top} className="!bg-transparent !border-0" />
+            <Handle
+                type="target"
+                position={Position.Top}
+                className="!bg-transparent !border-0 !w-3 !h-3"
+            />
             <div
                 className={cn(
                     'graph-node',
@@ -36,12 +40,20 @@ function GraphNode({ id, data }: NodeProps<GraphNodeType>) {
                     isInPath && !isCurrent && 'in-path'
                 )}
             >
-                <div className="font-semibold text-sm">{data.label}</div>
+                <div className="font-semibold text-sm text-[hsl(213,31%,91%)] tracking-tight">
+                    {data.label}
+                </div>
                 {data.distance !== undefined && (
-                    <div className="text-xs opacity-70 mt-1">d: {data.distance}</div>
+                    <div className="text-xs text-[hsl(215,20%,65%)] mt-1.5 font-medium">
+                        d: {data.distance === Infinity ? '∞' : data.distance}
+                    </div>
                 )}
             </div>
-            <Handle type="source" position={Position.Bottom} className="!bg-transparent !border-0" />
+            <Handle
+                type="source"
+                position={Position.Bottom}
+                className="!bg-transparent !border-0 !w-3 !h-3"
+            />
         </>
     );
 }

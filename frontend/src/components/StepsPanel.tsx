@@ -20,11 +20,16 @@ export default function StepsPanel() {
     if (steps.length === 0) {
         return (
             <Card className="glass-panel h-full">
-                <CardHeader>
-                    <CardTitle className="text-lg">Algorithm Steps</CardTitle>
+                <CardHeader className="pb-4">
+                    <CardTitle className="text-lg font-semibold text-[hsl(213,31%,91%)]">
+                        Algorithm Steps
+                    </CardTitle>
                 </CardHeader>
-                <CardContent className="text-center text-muted-foreground">
-                    <p>Run an algorithm to see the execution steps here.</p>
+                <CardContent className="flex flex-col items-center justify-center text-center py-12">
+                    <div className="text-4xl mb-4 animate-float">🔍</div>
+                    <p className="text-[hsl(215,20%,65%)] text-sm max-w-[200px]">
+                        Run an algorithm to see the execution steps here.
+                    </p>
                 </CardContent>
             </Card>
         );
@@ -49,9 +54,14 @@ export default function StepsPanel() {
 
     return (
         <Card className="glass-panel h-full flex flex-col">
-            <CardHeader className="pb-3">
-                <CardTitle className="text-lg">
-                    Algorithm Steps ({selectedAlgorithm?.toUpperCase()})
+            <CardHeader className="pb-3 shrink-0">
+                <CardTitle className="text-lg font-semibold text-[hsl(213,31%,91%)] flex items-center gap-2">
+                    <span>Algorithm Steps</span>
+                    {selectedAlgorithm && (
+                        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[hsl(231,97%,66%)]/20 text-[hsl(231,97%,76%)] border border-[hsl(231,97%,66%)]/30">
+                            {selectedAlgorithm.toUpperCase()}
+                        </span>
+                    )}
                 </CardTitle>
             </CardHeader>
             <CardContent className="flex-1 overflow-y-auto space-y-2 pr-2">
@@ -64,27 +74,35 @@ export default function StepsPanel() {
                             key={index}
                             ref={isActive ? activeStepRef : null}
                             className={cn(
-                                'p-3 rounded-lg border transition-all duration-300',
-                                isActive && 'bg-primary/20 border-primary shadow-lg scale-[1.02]',
-                                isPast && 'opacity-60 bg-muted/50',
-                                !isActive && !isPast && 'opacity-40 border-transparent'
+                                'step-item p-3 rounded-xl border transition-all duration-300',
+                                isActive && 'active bg-[hsl(231,97%,66%)]/15 border-[hsl(231,97%,66%)]/40 shadow-lg',
+                                isPast && 'opacity-50 bg-[hsl(223,47%,11%)]/50 border-transparent',
+                                !isActive && !isPast && 'opacity-30 border-transparent hover:opacity-50'
                             )}
+                            style={{
+                                animationDelay: `${index * 30}ms`
+                            }}
                         >
-                            <div className="flex items-start gap-2">
-                                <span className="text-lg">{getStepIcon(step.type)}</span>
+                            <div className="flex items-start gap-3">
+                                <span className="text-lg shrink-0">{getStepIcon(step.type)}</span>
                                 <div className="flex-1 min-w-0">
-                                    <div className="text-sm font-medium">{step.description}</div>
+                                    <div className="text-sm font-medium text-[hsl(213,31%,91%)] leading-snug">
+                                        {step.description}
+                                    </div>
                                     {step.data && Object.keys(step.data).length > 0 && (
-                                        <div className="text-xs text-muted-foreground mt-1">
+                                        <div className="text-xs text-[hsl(215,20%,55%)] mt-1.5 flex flex-wrap gap-x-2 gap-y-1">
                                             {Object.entries(step.data).map(([key, value]) => (
-                                                <span key={key} className="mr-2">
-                                                    {key}: {JSON.stringify(value)}
+                                                <span key={key} className="inline-flex items-center gap-1">
+                                                    <span className="text-[hsl(215,20%,45%)]">{key}:</span>
+                                                    <span className="font-mono">{JSON.stringify(value)}</span>
                                                 </span>
                                             ))}
                                         </div>
                                     )}
                                 </div>
-                                <span className="text-xs text-muted-foreground">#{index + 1}</span>
+                                <span className="text-[10px] font-medium text-[hsl(215,20%,45%)] tabular-nums shrink-0">
+                                    #{index + 1}
+                                </span>
                             </div>
                         </div>
                     );
@@ -92,9 +110,12 @@ export default function StepsPanel() {
 
                 {/* Result summary */}
                 {result && playback.currentStepIndex >= steps.length - 1 && (
-                    <div className="mt-4 p-4 rounded-lg bg-primary/10 border border-primary">
-                        <h4 className="font-semibold mb-2">Result</h4>
-                        <pre className="text-xs overflow-x-auto">
+                    <div className="mt-4 p-4 rounded-xl bg-[hsl(158,64%,52%)]/10 border border-[hsl(158,64%,52%)]/30 animate-scale-in">
+                        <h4 className="font-semibold text-sm text-[hsl(158,64%,72%)] mb-2 flex items-center gap-2">
+                            <span>✨</span>
+                            <span>Result</span>
+                        </h4>
+                        <pre className="text-xs text-[hsl(213,31%,91%)] overflow-x-auto font-mono leading-relaxed">
                             {JSON.stringify(result, null, 2)}
                         </pre>
                     </div>
@@ -103,3 +124,4 @@ export default function StepsPanel() {
         </Card>
     );
 }
+

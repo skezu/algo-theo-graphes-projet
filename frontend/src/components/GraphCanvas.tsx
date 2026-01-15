@@ -56,25 +56,25 @@ export default function GraphCanvas() {
             const updatedEdges: Edge[] = storeEdges.map(edge => {
                 let className = '';
                 let style: React.CSSProperties = {
-                    stroke: 'hsl(217 19% 27%)',
-                    strokeWidth: 2,
-                    transition: 'stroke 0.3s ease, stroke-width 0.3s ease',
+                    stroke: 'hsl(223 47% 25%)',
+                    strokeWidth: 2.5,
+                    transition: 'stroke 0.35s ease, stroke-width 0.35s ease',
                 };
 
                 // Check if edge is in MST
                 if (mstEdges.has(edge.id) || mstEdges.has(`${edge.target}-${edge.source}`)) {
                     className = 'edge-mst';
-                    style = { ...style, stroke: 'hsl(142 76% 36%)', strokeWidth: 4 };
+                    style = { ...style, stroke: 'hsl(158 64% 52%)', strokeWidth: 4.5 };
                 }
                 // Check if edge is in final path
                 else if (pathEdges.has(edge.id) || pathEdges.has(`${edge.target}-${edge.source}`)) {
                     className = 'edge-path';
-                    style = { ...style, stroke: 'hsl(231 97% 66%)', strokeWidth: 4 };
+                    style = { ...style, stroke: 'hsl(231 97% 66%)', strokeWidth: 4.5 };
                 }
                 // Check if edge was explored
                 else if (exploredEdges.has(edge.id) || exploredEdges.has(`${edge.target}-${edge.source}`)) {
                     className = 'edge-explored';
-                    style = { ...style, stroke: 'hsl(43 96% 56%)', strokeWidth: 3 };
+                    style = { ...style, stroke: 'hsl(45 93% 58%)', strokeWidth: 3.5 };
                 }
 
                 return {
@@ -82,10 +82,18 @@ export default function GraphCanvas() {
                     className,
                     style,
                     label: edge.label,
-                    labelStyle: { fill: 'hsl(var(--foreground))', fontWeight: 500, fontSize: 12 },
-                    labelBgStyle: { fill: 'hsl(var(--background))', fillOpacity: 0.8 },
-                    labelBgPadding: [4, 8] as [number, number],
-                    labelBgBorderRadius: 4,
+                    labelStyle: {
+                        fill: 'hsl(213 31% 91%)',
+                        fontWeight: 500,
+                        fontSize: 11,
+                        fontFamily: 'Inter, system-ui, sans-serif'
+                    },
+                    labelBgStyle: {
+                        fill: 'hsl(224 71% 6%)',
+                        fillOpacity: 0.9
+                    },
+                    labelBgPadding: [6, 10] as [number, number],
+                    labelBgBorderRadius: 6,
                 };
             });
             setEdges(updatedEdges);
@@ -98,11 +106,13 @@ export default function GraphCanvas() {
 
     if (!isGraphLoaded) {
         return (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
-                <div className="text-center">
-                    <div className="text-6xl mb-4">📊</div>
-                    <h2 className="text-2xl font-bold text-white mb-2">Graph Algorithms Visualizer</h2>
-                    <p className="text-slate-400">Load a graph to begin visualization</p>
+            <div className="w-full h-full flex items-center justify-center bg-[hsl(224,71%,4%)]">
+                <div className="empty-state animate-fade-in">
+                    <div className="empty-state-icon">📊</div>
+                    <h2 className="empty-state-title">Graph Algorithms Visualizer</h2>
+                    <p className="empty-state-description">
+                        Load a graph from the control panel to begin visualization
+                    </p>
                 </div>
             </div>
         );
@@ -124,14 +134,20 @@ export default function GraphCanvas() {
                 maxZoom={2}
                 proOptions={{ hideAttribution: true }}
             >
-                <Background color="hsl(var(--muted-foreground))" gap={20} size={1} />
-                <Controls className="!bg-slate-800 !border-slate-700 !rounded-lg" />
+                <Background
+                    color="hsl(223 47% 20%)"
+                    gap={24}
+                    size={1.5}
+                />
+                <Controls />
                 <MiniMap
-                    className="!bg-slate-800 !border-slate-700 !rounded-lg"
-                    nodeColor="hsl(var(--primary))"
-                    maskColor="hsl(var(--background) / 0.8)"
+                    nodeColor="hsl(231 97% 66%)"
+                    maskColor="hsl(224 71% 4% / 0.85)"
+                    pannable
+                    zoomable
                 />
             </ReactFlow>
         </div>
     );
 }
+

@@ -110,15 +110,18 @@ export default function ControlPanel() {
     return (
         <div className="flex flex-col gap-4 p-4 h-full overflow-y-auto">
             {/* Graph Loading */}
-            <Card className="glass-panel">
+            <Card className="glass-panel animate-fade-in" style={{ animationDelay: '0ms' }}>
                 <CardHeader className="pb-3">
-                    <CardTitle className="text-lg">Graph Data</CardTitle>
+                    <CardTitle className="text-base font-semibold text-[hsl(213,31%,91%)] flex items-center gap-2">
+                        <span className="text-lg">📊</span>
+                        Graph Data
+                    </CardTitle>
                 </CardHeader>
                 <CardContent>
                     <Button
                         onClick={handleLoadGraph}
                         disabled={isLoading}
-                        className="w-full"
+                        className="w-full btn-glow"
                     >
                         {isLoading ? (
                             <>
@@ -132,7 +135,8 @@ export default function ControlPanel() {
                         )}
                     </Button>
                     {isGraphLoaded && (
-                        <p className="text-sm text-muted-foreground mt-2">
+                        <p className="text-sm text-[hsl(158,64%,52%)] mt-3 flex items-center gap-1.5">
+                            <span>✓</span>
                             {availableNodes.length} nodes loaded
                         </p>
                     )}
@@ -140,22 +144,25 @@ export default function ControlPanel() {
             </Card>
 
             {/* Algorithm Selection */}
-            <Card className="glass-panel">
+            <Card className="glass-panel animate-fade-in" style={{ animationDelay: '100ms' }}>
                 <CardHeader className="pb-3">
-                    <CardTitle className="text-lg">Algorithm</CardTitle>
+                    <CardTitle className="text-base font-semibold text-[hsl(213,31%,91%)] flex items-center gap-2">
+                        <span className="text-lg">⚡</span>
+                        Algorithm
+                    </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
-                        <Label>Select Algorithm</Label>
+                        <Label className="text-sm font-medium text-[hsl(215,20%,65%)]">Select Algorithm</Label>
                         <Select
                             value={selectedAlgorithm || ''}
                             onValueChange={(v) => setSelectedAlgorithm(v as AlgorithmName)}
                             disabled={!isGraphLoaded}
                         >
-                            <SelectTrigger>
+                            <SelectTrigger className="bg-[hsl(222,47%,11%)] border-[hsl(223,47%,18%)] hover:border-[hsl(231,97%,66%)]/50 transition-colors">
                                 <SelectValue placeholder="Choose an algorithm" />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="bg-[hsl(224,71%,6%)] border-[hsl(223,47%,18%)]">
                                 <SelectItem value="bfs">BFS (Breadth-First)</SelectItem>
                                 <SelectItem value="dfs">DFS (Depth-First)</SelectItem>
                                 <SelectItem value="dijkstra">Dijkstra</SelectItem>
@@ -167,22 +174,22 @@ export default function ControlPanel() {
                     </div>
 
                     {algorithmInfo && (
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-[hsl(215,20%,65%)] leading-relaxed">
                             {algorithmInfo.description}
                         </p>
                     )}
 
                     <div className="space-y-2">
-                        <Label>Start Node</Label>
+                        <Label className="text-sm font-medium text-[hsl(215,20%,65%)]">Start Node</Label>
                         <Select
                             value={startNode}
                             onValueChange={setStartNode}
                             disabled={!isGraphLoaded}
                         >
-                            <SelectTrigger>
+                            <SelectTrigger className="bg-[hsl(222,47%,11%)] border-[hsl(223,47%,18%)] hover:border-[hsl(231,97%,66%)]/50 transition-colors">
                                 <SelectValue placeholder="Select start" />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="bg-[hsl(224,71%,6%)] border-[hsl(223,47%,18%)]">
                                 {availableNodes.map(node => (
                                     <SelectItem key={node} value={node}>{node}</SelectItem>
                                 ))}
@@ -192,16 +199,16 @@ export default function ControlPanel() {
 
                     {algorithmInfo?.needsEndNode && (
                         <div className="space-y-2">
-                            <Label>End Node (optional)</Label>
+                            <Label className="text-sm font-medium text-[hsl(215,20%,65%)]">End Node (optional)</Label>
                             <Select
                                 value={endNode}
                                 onValueChange={setEndNode}
                                 disabled={!isGraphLoaded}
                             >
-                                <SelectTrigger>
+                                <SelectTrigger className="bg-[hsl(222,47%,11%)] border-[hsl(223,47%,18%)] hover:border-[hsl(231,97%,66%)]/50 transition-colors">
                                     <SelectValue placeholder="Select end" />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent className="bg-[hsl(224,71%,6%)] border-[hsl(223,47%,18%)]">
                                     {availableNodes.filter(n => n !== startNode).map(node => (
                                         <SelectItem key={node} value={node}>{node}</SelectItem>
                                     ))}
@@ -213,7 +220,7 @@ export default function ControlPanel() {
                     <Button
                         onClick={handleRunAlgorithm}
                         disabled={!selectedAlgorithm || !startNode || isRunning}
-                        className="w-full"
+                        className="w-full btn-glow mt-2"
                     >
                         {isRunning ? (
                             <>
@@ -221,7 +228,10 @@ export default function ControlPanel() {
                                 Running...
                             </>
                         ) : (
-                            'Run Algorithm'
+                            <>
+                                <Play className="mr-2 h-4 w-4" />
+                                Run Algorithm
+                            </>
                         )}
                     </Button>
                 </CardContent>
@@ -229,13 +239,16 @@ export default function ControlPanel() {
 
             {/* Playback Controls */}
             {steps.length > 0 && (
-                <Card className="glass-panel">
+                <Card className="glass-panel animate-fade-in" style={{ animationDelay: '200ms' }}>
                     <CardHeader className="pb-3">
-                        <CardTitle className="text-lg">Playback</CardTitle>
+                        <CardTitle className="text-base font-semibold text-[hsl(213,31%,91%)] flex items-center gap-2">
+                            <span className="text-lg">▶️</span>
+                            Playback
+                        </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="flex items-center justify-center gap-2">
-                            <Button variant="outline" size="icon" onClick={reset}>
+                            <Button variant="outline" size="icon" onClick={reset} className="border-[hsl(223,47%,18%)] hover:bg-[hsl(222,47%,14%)] hover:border-[hsl(231,97%,66%)]/50">
                                 <RotateCcw className="h-4 w-4" />
                             </Button>
                             <Button

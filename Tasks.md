@@ -44,3 +44,14 @@
 - [x] Implémenter le frontend React avec React Flow
 - [x] Implémenter la visualisation dynamique des algorithmes
 - [ ] Tester tous les algorithmes visuellement
+
+## 8. Améliorations UI/UX (Nouveau)
+- [x] Améliorer le thème sombre avec une palette de couleurs raffinée
+- [x] Styliser les nœuds du graphe avec un fond sombre cohérent
+- [x] Ajouter des effets de glassmorphism aux panneaux latéraux
+- [x] Améliorer la typographie avec la police Inter
+- [x] Ajouter des animations d'entrée fluides (fade-in, slide)
+- [x] Styliser les contrôles React Flow (minimap, zoom) pour le thème sombre
+- [x] Améliorer l'état vide avec une icône animée flottante
+- [x] Affiner l'espacement et la hiérarchie visuelle
+- [x] Ajouter des effets de survol et transitions sur les éléments interactifs
