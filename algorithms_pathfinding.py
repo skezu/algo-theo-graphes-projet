@@ -152,6 +152,14 @@ def bellman_ford(
                 distances[v] = distances[u] + weight
                 predecessors[v] = u
                 modified = True
+            
+            # Pour un graphe non orienté, on doit aussi relaxer l'arête inverse (v -> u)
+            # car get_edges() ne retourne qu'une seule direction pour chaque paire
+            if not graph.directed:
+                if distances[v] != float('inf') and distances[v] + weight < distances[u]:
+                    distances[u] = distances[v] + weight
+                    predecessors[u] = v
+                    modified = True
         # Optimisation : si aucune distance n'a changé, on peut arrêter
         if not modified:
              break

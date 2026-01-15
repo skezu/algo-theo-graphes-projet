@@ -362,9 +362,11 @@ class PertScheduler:
         Note:
             Utilise un tri topologique ou un DFS pour détecter les cycles.
         """
-        raise NotImplementedError(
-            "La méthode validate_no_cycles doit être implémentée."
-        )
+        try:
+            self._get_topological_sort()
+            return True
+        except ValueError:
+            return False
 
     def load_sample_project(self) -> None:
         """
@@ -373,7 +375,6 @@ class PertScheduler:
         Crée un ensemble de tâches avec dépendances pour démontrer
         les fonctionnalités du planificateur PERT.
         """
-        # TODO: Ajouter des tâches d'exemple
         # Exemple de projet de construction:
         # - A: Études préliminaires (durée: 3)
         # - B: Fondations (durée: 5, après A)
@@ -381,9 +382,12 @@ class PertScheduler:
         # - D: Toiture (durée: 3, après C)
         # - E: Électricité (durée: 2, après B)
         # - F: Finitions (durée: 2, après D et E)
-        raise NotImplementedError(
-            "La méthode load_sample_project doit être implémentée."
-        )
+        self.add_task("A", "Études préliminaires", 3)
+        self.add_task("B", "Fondations", 5, ["A"])
+        self.add_task("C", "Murs", 4, ["B"])
+        self.add_task("D", "Toiture", 3, ["C"])
+        self.add_task("E", "Électricité", 2, ["B"])
+        self.add_task("F", "Finitions", 2, ["D", "E"])
 
     def __repr__(self) -> str:
         """Représentation textuelle du planificateur."""
