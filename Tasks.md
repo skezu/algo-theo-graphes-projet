@@ -36,3 +36,8 @@
 - [ ] Décommenter les tests dans `main.py`
 - [ ] Vérifier les résultats sur le graphe routier
 - [ ] Vérifier les résultats sur le projet PERT exemple
+
+## 7. Interface Visuelle (Bonus)
+- [x] Créer l'API Backend (FastAPI) pour exposer les graphes et algorithmes
+- [x] Créer le Frontend (React + React Flow + Shadcn)
+- [x] Implémenter la visualisation des étapes (BFS, DFS, Dijkstra)
