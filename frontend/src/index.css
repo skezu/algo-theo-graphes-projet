@@ -241,6 +241,14 @@ body {
     stroke-width: 3.5;
 }
 
+.react-flow__edge-text {
+    z-index: 10;
+}
+
+.react-flow__edge-textbg {
+    z-index: 9;
+}
+
 /* React Flow Background - subtle dots */
 .react-flow__background {
     opacity: 0.4;

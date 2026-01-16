@@ -4,6 +4,7 @@
 import { create } from 'zustand';
 import type { Node, Edge } from '@xyflow/react';
 import type { AlgorithmStep, AlgorithmName } from '../services/api';
+import { applyAutoLayout } from './layoutUtils';
 
 interface PlaybackState {
     isPlaying: boolean;
@@ -88,7 +89,19 @@ export const useAppStore = create<AppState>((set, get) => ({
     setNodes: (nodes) => set({ nodes }),
     setEdges: (edges) => set({ edges }),
     setAvailableNodes: (availableNodes) => set({ availableNodes }),
-    setGraphLoaded: (isGraphLoaded) => set({ isGraphLoaded }),
+
+
+    // ... (imports remain)
+
+    setGraphLoaded: (isGraphLoaded) => {
+        if (isGraphLoaded) {
+            const { nodes, edges } = get();
+            const { nodes: layoutedNodes, edges: layoutedEdges } = applyAutoLayout(nodes, edges);
+            set({ isGraphLoaded, nodes: layoutedNodes, edges: layoutedEdges });
+        } else {
+            set({ isGraphLoaded });
+        }
+    },
     setSelectedAlgorithm: (selectedAlgorithm) => set({ selectedAlgorithm }),
     setStartNode: (startNode) => set({ startNode }),
     setEndNode: (endNode) => set({ endNode }),

@@ -6,7 +6,7 @@ import {
     ReactFlow,
     Background,
     Controls,
-    MiniMap,
+    Panel,
     useNodesState,
     useEdgesState,
     type Node,
@@ -16,6 +16,7 @@ import {
 import '@xyflow/react/dist/style.css';
 import { useAppStore } from '@/lib/store';
 import GraphNode from './GraphNode';
+import Legend from './Legend';
 
 const nodeTypes = {
     default: GraphNode,
@@ -61,38 +62,52 @@ export default function GraphCanvas() {
                     transition: 'stroke 0.35s ease, stroke-width 0.35s ease',
                 };
 
+                // Dynamic label background color based on state
+                let labelBgColor = 'hsl(224 71% 6%)';
+                let labelColor = 'hsl(213 31% 91%)';
+
                 // Check if edge is in MST
                 if (mstEdges.has(edge.id) || mstEdges.has(`${edge.target}-${edge.source}`)) {
                     className = 'edge-mst';
                     style = { ...style, stroke: 'hsl(158 64% 52%)', strokeWidth: 4.5 };
+                    labelBgColor = 'hsl(158 50% 10%)'; // Dark green background
+                    labelColor = 'hsl(158 80% 90%)';
                 }
                 // Check if edge is in final path
                 else if (pathEdges.has(edge.id) || pathEdges.has(`${edge.target}-${edge.source}`)) {
                     className = 'edge-path';
                     style = { ...style, stroke: 'hsl(231 97% 66%)', strokeWidth: 4.5 };
+                    labelBgColor = 'hsl(231 60% 12%)'; // Dark blue background
+                    labelColor = 'hsl(231 90% 90%)';
                 }
                 // Check if edge was explored
                 else if (exploredEdges.has(edge.id) || exploredEdges.has(`${edge.target}-${edge.source}`)) {
                     className = 'edge-explored';
                     style = { ...style, stroke: 'hsl(45 93% 58%)', strokeWidth: 3.5 };
+                    labelBgColor = 'hsl(35 60% 12%)'; // Dark amber background
+                    labelColor = 'hsl(45 90% 90%)';
                 }
 
                 return {
                     ...edge,
+                    type: 'smoothstep', // Consistent curve
                     className,
                     style,
                     label: edge.label,
                     labelStyle: {
-                        fill: 'hsl(213 31% 91%)',
-                        fontWeight: 500,
-                        fontSize: 11,
-                        fontFamily: 'Inter, system-ui, sans-serif'
+                        fill: labelColor,
+                        fontWeight: 600,
+                        fontSize: 12,
+                        fontFamily: 'Inter, system-ui, sans-serif',
+                        textShadow: '0 1px 2px rgba(0,0,0,0.8)'
                     },
                     labelBgStyle: {
-                        fill: 'hsl(224 71% 6%)',
-                        fillOpacity: 0.9
+                        fill: labelBgColor,
+                        fillOpacity: 1,
+                        stroke: style.stroke,
+                        strokeWidth: 1,
                     },
-                    labelBgPadding: [6, 10] as [number, number],
+                    labelBgPadding: [8, 4] as [number, number],
                     labelBgBorderRadius: 6,
                 };
             });
@@ -133,6 +148,7 @@ export default function GraphCanvas() {
                 minZoom={0.1}
                 maxZoom={2}
                 proOptions={{ hideAttribution: true }}
+                defaultEdgeOptions={{ type: 'smoothstep' }}
             >
                 <Background
                     color="hsl(223 47% 20%)"
@@ -140,12 +156,9 @@ export default function GraphCanvas() {
                     size={1.5}
                 />
                 <Controls />
-                <MiniMap
-                    nodeColor="hsl(231 97% 66%)"
-                    maskColor="hsl(224 71% 4% / 0.85)"
-                    pannable
-                    zoomable
-                />
+                <Panel position="bottom-left">
+                    <Legend />
+                </Panel>
             </ReactFlow>
         </div>
     );
