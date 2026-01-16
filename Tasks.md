@@ -55,3 +55,4 @@
 - [x] Améliorer l'état vide avec une icône animée flottante
 - [x] Affiner l'espacement et la hiérarchie visuelle
 - [x] Ajouter des effets de survol et transitions sur les éléments interactifs
+- [x] Implémenter l'algorithme de layout Dagre (Sugiyama) pour minimiser les croisements d'arêtes

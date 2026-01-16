@@ -1,110 +1,81 @@
-import { type Node, type Edge, Position } from '@xyflow/react';
-
 /**
  * layoutUtils.ts
- * Utilities for automatic graph layout.
- * Uses a custom BFS-based layered layout to avoid external dependencies.
+ * Utilities for automatic graph layout using Dagre (Sugiyama algorithm).
+ * Dagre minimizes edge crossings and produces clean hierarchical layouts.
  */
+import { type Node, type Edge, Position } from '@xyflow/react';
+import dagre from '@dagrejs/dagre';
 
-export const applyAutoLayout = (nodes: Node[], edges: Edge[], direction = 'TB') => {
+// Create a new dagre graph instance
+const dagreGraph = new dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
+
+// Node dimensions for layout calculation
+const NODE_WIDTH = 140;
+const NODE_HEIGHT = 50;
+
+/**
+ * Apply automatic layout using Dagre's Sugiyama algorithm.
+ * This algorithm minimizes edge crossings and produces clean hierarchical layouts.
+ *
+ * @param nodes - React Flow nodes
+ * @param edges - React Flow edges
+ * @param direction - Layout direction: 'TB' (top-bottom) or 'LR' (left-right)
+ * @returns Layouted nodes and edges
+ */
+export const applyAutoLayout = (
+    nodes: Node[],
+    edges: Edge[],
+    direction: 'TB' | 'LR' = 'TB'
+): { nodes: Node[]; edges: Edge[] } => {
+    if (nodes.length === 0) {
+        return { nodes, edges };
+    }
+
     const isHorizontal = direction === 'LR';
 
-    // 1. Build adjacency list and find roots
-    const adj: Record<string, string[]> = {};
-    const inDegree: Record<string, number> = {};
-
-    nodes.forEach(n => {
-        adj[n.id] = [];
-        inDegree[n.id] = 0;
+    // Configure the graph
+    dagreGraph.setGraph({
+        rankdir: direction,
+        nodesep: 80,    // Horizontal separation between nodes
+        ranksep: 100,   // Vertical separation between ranks (layers)
+        edgesep: 40,    // Separation between edges
+        marginx: 20,
+        marginy: 20,
     });
 
-    edges.forEach(e => {
-        if (adj[e.source]) {
-            adj[e.source].push(e.target);
-            inDegree[e.target] = (inDegree[e.target] || 0) + 1;
-        }
+    // Clear previous graph data
+    dagreGraph.nodes().forEach((n) => dagreGraph.removeNode(n));
+
+    // Add nodes to dagre graph
+    nodes.forEach((node) => {
+        dagreGraph.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
     });
 
-    // 2. Assign levels (layers) using BFS
-    const levels: Record<string, number> = {};
-    const maxPerLevel: Record<number, number> = {};
-    const queue: string[] = [];
-
-    // Start with nodes having 0 in-degree (roots), or the first node if cycle/no roots
-    nodes.forEach(n => {
-        if (inDegree[n.id] === 0) {
-            queue.push(n.id);
-            levels[n.id] = 0;
-        }
+    // Add edges to dagre graph
+    edges.forEach((edge) => {
+        dagreGraph.setEdge(edge.source, edge.target);
     });
 
-    if (queue.length === 0 && nodes.length > 0) {
-        // Handle cyclic graphs with no clear root
-        queue.push(nodes[0].id);
-        levels[nodes[0].id] = 0;
-    }
+    // Run the layout algorithm
+    dagre.layout(dagreGraph);
 
-    const visited = new Set<string>(queue);
-
-    while (queue.length > 0) {
-        const u = queue.shift()!;
-        const level = levels[u];
-
-        // Count nodes per level for X positioning
-        maxPerLevel[level] = (maxPerLevel[level] || 0) + 1;
-
-        if (adj[u]) {
-            adj[u].forEach(v => {
-                if (!visited.has(v)) {
-                    visited.add(v);
-                    levels[v] = level + 1;
-                    queue.push(v);
-                }
-            });
-        }
-    }
-
-    // Handle disconnected components
-    nodes.forEach(n => {
-        if (!visited.has(n.id)) {
-            levels[n.id] = 0;
-            maxPerLevel[0] = (maxPerLevel[0] || 0) + 1;
-        }
-    });
-
-    // 3. Assign positions
-    // Constants for spacing
-    const nodeWidth = 180;
-    const nodeHeight = 80;
-    const xGap = 50;
-    const yGap = 100;
-
-    // Track current index in each level during positioning
-    const levelCurrentIndex: Record<number, number> = {};
-
+    // Apply calculated positions to nodes
     const layoutedNodes = nodes.map((node) => {
-        const level = levels[node.id] || 0;
-        const indexInLevel = levelCurrentIndex[level] || 0;
-        levelCurrentIndex[level] = indexInLevel + 1;
+        const nodeWithPosition = dagreGraph.node(node.id);
 
-        // Center the layer
-        const layerWidth = maxPerLevel[level] * (nodeWidth + xGap) - xGap;
-        const xOffset = -layerWidth / 2;
-
-        let x = xOffset + indexInLevel * (nodeWidth + xGap);
-        let y = level * (nodeHeight + yGap);
-
-        if (isHorizontal) {
-            // Swap X and Y for horizontal
-            [x, y] = [y, x];
-        }
-
-        return {
+        // Dagre uses center-center anchor, React Flow uses top-left
+        // So we need to shift the position
+        const newNode: Node = {
             ...node,
             targetPosition: isHorizontal ? Position.Left : Position.Top,
             sourcePosition: isHorizontal ? Position.Right : Position.Bottom,
-            position: { x, y },
+            position: {
+                x: nodeWithPosition.x - NODE_WIDTH / 2,
+                y: nodeWithPosition.y - NODE_HEIGHT / 2,
+            },
         };
+
+        return newNode;
     });
 
     return { nodes: layoutedNodes, edges };
