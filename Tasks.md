@@ -54,4 +54,5 @@
 - [x] Styliser les contrôles React Flow (minimap, zoom) pour le thème sombre
 - [x] Améliorer l'état vide avec une icône animée flottante
 - [x] Affiner l'espacement et la hiérarchie visuelle
-- [x] Ajouter des effets de survol et transitions sur les éléments interactifs
+## 9. Documentation (Nouveau)
+- [x] Générer un `README.md` simple avec les commandes d'installation et de lancement
