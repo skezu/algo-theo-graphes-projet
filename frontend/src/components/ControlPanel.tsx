@@ -4,7 +4,6 @@
 import { useState } from 'react';
 import { Play, Pause, RotateCcw, SkipForward, SkipBack, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Slider } from './ui/slider';
@@ -108,210 +107,214 @@ export default function ControlPanel() {
     const algorithmInfo = selectedAlgorithm ? ALGORITHM_INFO[selectedAlgorithm] : null;
 
     return (
-        <div className="flex flex-col gap-4 p-4 h-full overflow-y-auto">
-            {/* Graph Loading */}
-            <Card className="glass-panel animate-fade-in" style={{ animationDelay: '0ms' }}>
-                <CardHeader className="pb-3">
-                    <CardTitle className="text-base font-semibold text-[hsl(213,31%,91%)] flex items-center gap-2">
-                        <span className="text-lg">📊</span>
-                        Graph Data
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <Button
-                        onClick={handleLoadGraph}
-                        disabled={isLoading}
-                        className="w-full btn-glow"
+        <div className="flex flex-col gap-6 p-6 h-full overflow-y-auto">
+            {/* Section 1: Graph Data */}
+            <div className="space-y-4">
+                <h2 className="text-lg font-bold text-[#f0f0f0] flex items-center gap-2">
+                    <span className="text-xl">📊</span>
+                    Graph Data
+                </h2>
+                <Button
+                    onClick={handleLoadGraph}
+                    disabled={isLoading}
+                    className="w-full"
+                >
+                    {isLoading ? (
+                        <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Loading...
+                        </>
+                    ) : isGraphLoaded ? (
+                        'Reload Graph'
+                    ) : (
+                        'Load Road Network'
+                    )}
+                </Button>
+                {isGraphLoaded && (
+                    <p className="text-sm text-[#9bce8f] mt-3 flex items-center gap-1.5">
+                        <span>✓</span>
+                        {availableNodes.length} nodes loaded
+                    </p>
+                )}
+            </div>
+
+            {/* Separator */}
+            <div className="border-t border-[rgba(240,240,240,0.15)]"></div>
+
+            {/* Section 2: Algorithm */}
+            <div className="space-y-4">
+                <h2 className="text-lg font-bold text-[#f0f0f0] flex items-center gap-2">
+                    <span className="text-xl">⚡</span>
+                    Algorithm
+                </h2>
+
+                <div className="space-y-2">
+                    <Label className="text-sm font-medium text-[rgba(240,240,240,0.7)]">Select Algorithm</Label>
+                    <Select
+                        value={selectedAlgorithm || ''}
+                        onValueChange={(v) => setSelectedAlgorithm(v as AlgorithmName)}
+                        disabled={!isGraphLoaded}
                     >
-                        {isLoading ? (
-                            <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Loading...
-                            </>
-                        ) : isGraphLoaded ? (
-                            'Reload Graph'
-                        ) : (
-                            'Load Road Network'
-                        )}
-                    </Button>
-                    {isGraphLoaded && (
-                        <p className="text-sm text-[hsl(158,64%,52%)] mt-3 flex items-center gap-1.5">
-                            <span>✓</span>
-                            {availableNodes.length} nodes loaded
-                        </p>
-                    )}
-                </CardContent>
-            </Card>
+                        <SelectTrigger className="bg-[#2a2a2a] border-[rgba(240,240,240,0.2)] hover:border-[rgba(240,240,240,0.3)]">
+                            <SelectValue placeholder="Choose an algorithm" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-[#2a2a2a] border-[rgba(240,240,240,0.2)]">
+                            <SelectItem value="bfs">BFS (Breadth-First)</SelectItem>
+                            <SelectItem value="dfs">DFS (Depth-First)</SelectItem>
+                            <SelectItem value="dijkstra">Dijkstra</SelectItem>
+                            <SelectItem value="bellman-ford">Bellman-Ford</SelectItem>
+                            <SelectItem value="prim">Prim's MST</SelectItem>
+                            <SelectItem value="kruskal">Kruskal's MST</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
 
-            {/* Algorithm Selection */}
-            <Card className="glass-panel animate-fade-in" style={{ animationDelay: '100ms' }}>
-                <CardHeader className="pb-3">
-                    <CardTitle className="text-base font-semibold text-[hsl(213,31%,91%)] flex items-center gap-2">
-                        <span className="text-lg">⚡</span>
-                        Algorithm
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
+                {algorithmInfo && (
+                    <p className="text-sm text-[rgba(240,240,240,0.7)] leading-relaxed">
+                        {algorithmInfo.description}
+                    </p>
+                )}
+
+                <div className="space-y-2">
+                    <Label className="text-sm font-medium text-[rgba(240,240,240,0.7)]">Start Node</Label>
+                    <Select
+                        value={startNode}
+                        onValueChange={setStartNode}
+                        disabled={!isGraphLoaded}
+                    >
+                        <SelectTrigger className="bg-[#2a2a2a] border-[rgba(240,240,240,0.2)] hover:border-[rgba(240,240,240,0.3)]">
+                            <SelectValue placeholder="Select start" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-[#2a2a2a] border-[rgba(240,240,240,0.2)]">
+                            {availableNodes.map(node => (
+                                <SelectItem key={node} value={node}>{node}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                {algorithmInfo?.needsEndNode && (
                     <div className="space-y-2">
-                        <Label className="text-sm font-medium text-[hsl(215,20%,65%)]">Select Algorithm</Label>
+                        <Label className="text-sm font-medium text-[rgba(240,240,240,0.7)]">End Node (optional)</Label>
                         <Select
-                            value={selectedAlgorithm || ''}
-                            onValueChange={(v) => setSelectedAlgorithm(v as AlgorithmName)}
+                            value={endNode}
+                            onValueChange={setEndNode}
                             disabled={!isGraphLoaded}
                         >
-                            <SelectTrigger className="bg-[hsl(222,47%,11%)] border-[hsl(223,47%,18%)] hover:border-[hsl(231,97%,66%)]/50 transition-colors">
-                                <SelectValue placeholder="Choose an algorithm" />
+                            <SelectTrigger className="bg-[#2a2a2a] border-[rgba(240,240,240,0.2)] hover:border-[rgba(240,240,240,0.3)]">
+                                <SelectValue placeholder="Select end" />
                             </SelectTrigger>
-                            <SelectContent className="bg-[hsl(224,71%,6%)] border-[hsl(223,47%,18%)]">
-                                <SelectItem value="bfs">BFS (Breadth-First)</SelectItem>
-                                <SelectItem value="dfs">DFS (Depth-First)</SelectItem>
-                                <SelectItem value="dijkstra">Dijkstra</SelectItem>
-                                <SelectItem value="bellman-ford">Bellman-Ford</SelectItem>
-                                <SelectItem value="prim">Prim's MST</SelectItem>
-                                <SelectItem value="kruskal">Kruskal's MST</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-
-                    {algorithmInfo && (
-                        <p className="text-sm text-[hsl(215,20%,65%)] leading-relaxed">
-                            {algorithmInfo.description}
-                        </p>
-                    )}
-
-                    <div className="space-y-2">
-                        <Label className="text-sm font-medium text-[hsl(215,20%,65%)]">Start Node</Label>
-                        <Select
-                            value={startNode}
-                            onValueChange={setStartNode}
-                            disabled={!isGraphLoaded}
-                        >
-                            <SelectTrigger className="bg-[hsl(222,47%,11%)] border-[hsl(223,47%,18%)] hover:border-[hsl(231,97%,66%)]/50 transition-colors">
-                                <SelectValue placeholder="Select start" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-[hsl(224,71%,6%)] border-[hsl(223,47%,18%)]">
-                                {availableNodes.map(node => (
+                            <SelectContent className="bg-[#2a2a2a] border-[rgba(240,240,240,0.2)]">
+                                {availableNodes.filter(n => n !== startNode).map(node => (
                                     <SelectItem key={node} value={node}>{node}</SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
                     </div>
+                )}
 
-                    {algorithmInfo?.needsEndNode && (
-                        <div className="space-y-2">
-                            <Label className="text-sm font-medium text-[hsl(215,20%,65%)]">End Node (optional)</Label>
-                            <Select
-                                value={endNode}
-                                onValueChange={setEndNode}
-                                disabled={!isGraphLoaded}
-                            >
-                                <SelectTrigger className="bg-[hsl(222,47%,11%)] border-[hsl(223,47%,18%)] hover:border-[hsl(231,97%,66%)]/50 transition-colors">
-                                    <SelectValue placeholder="Select end" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-[hsl(224,71%,6%)] border-[hsl(223,47%,18%)]">
-                                    {availableNodes.filter(n => n !== startNode).map(node => (
-                                        <SelectItem key={node} value={node}>{node}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
+                <Button
+                    onClick={handleRunAlgorithm}
+                    disabled={!selectedAlgorithm || !startNode || isRunning}
+                    className="w-full mt-2"
+                >
+                    {isRunning ? (
+                        <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Running...
+                        </>
+                    ) : (
+                        <>
+                            <Play className="mr-2 h-4 w-4" />
+                            Run Algorithm
+                        </>
                     )}
+                </Button>
+            </div>
 
-                    <Button
-                        onClick={handleRunAlgorithm}
-                        disabled={!selectedAlgorithm || !startNode || isRunning}
-                        className="w-full btn-glow mt-2"
-                    >
-                        {isRunning ? (
-                            <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Running...
-                            </>
-                        ) : (
-                            <>
-                                <Play className="mr-2 h-4 w-4" />
-                                Run Algorithm
-                            </>
-                        )}
-                    </Button>
-                </CardContent>
-            </Card>
-
-            {/* Playback Controls */}
+            {/* Separator */}
             {steps.length > 0 && (
-                <Card className="glass-panel animate-fade-in" style={{ animationDelay: '200ms' }}>
-                    <CardHeader className="pb-3">
-                        <CardTitle className="text-base font-semibold text-[hsl(213,31%,91%)] flex items-center gap-2">
-                            <span className="text-lg">▶️</span>
-                            Playback
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="flex items-center justify-center gap-2">
-                            <Button variant="outline" size="icon" onClick={reset} className="border-[hsl(223,47%,18%)] hover:bg-[hsl(222,47%,14%)] hover:border-[hsl(231,97%,66%)]/50">
-                                <RotateCcw className="h-4 w-4" />
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => {
-                                    reset();
-                                    const { goToStep } = useAppStore.getState();
-                                    if (playback.currentStepIndex > 0) {
-                                        goToStep(playback.currentStepIndex - 1);
-                                    }
-                                }}
-                            >
-                                <SkipBack className="h-4 w-4" />
-                            </Button>
-                            <Button
-                                size="icon"
-                                onClick={playback.isPlaying ? pause : play}
-                            >
-                                {playback.isPlaying ? (
-                                    <Pause className="h-4 w-4" />
-                                ) : (
-                                    <Play className="h-4 w-4" />
-                                )}
-                            </Button>
-                            <Button variant="outline" size="icon" onClick={nextStep}>
-                                <SkipForward className="h-4 w-4" />
-                            </Button>
-                        </div>
+                <div className="border-t border-[rgba(240,240,240,0.15)]"></div>
+            )}
 
-                        <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                                <span>Step {playback.currentStepIndex + 1}</span>
-                                <span>of {steps.length}</span>
-                            </div>
-                            <Slider
-                                value={[playback.currentStepIndex + 1]}
-                                min={0}
-                                max={steps.length}
-                                step={1}
-                                onValueChange={([v]) => {
-                                    const { goToStep, clearVisualization } = useAppStore.getState();
-                                    if (v === 0) {
-                                        clearVisualization();
-                                    } else {
-                                        goToStep(v - 1);
-                                    }
-                                }}
-                            />
-                        </div>
+            {/* Section 3: Playback (conditional) */}
+            {steps.length > 0 && (
+                <div className="space-y-4">
+                    <h2 className="text-lg font-bold text-[#f0f0f0] flex items-center gap-2">
+                        <span className="text-xl">▶️</span>
+                        Playback
+                    </h2>
 
-                        <div className="space-y-2">
-                            <Label>Speed: {playback.speed}ms</Label>
-                            <Slider
-                                value={[playback.speed]}
-                                min={100}
-                                max={2000}
-                                step={100}
-                                onValueChange={([v]) => setSpeed(v)}
-                            />
+                    <div className="flex items-center justify-center gap-2">
+                        <Button variant="outline" size="icon" onClick={reset} className="border-[rgba(240,240,240,0.2)] hover:bg-[rgba(240,240,240,0.05)]">
+                            <RotateCcw className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => {
+                                reset();
+                                const { goToStep } = useAppStore.getState();
+                                if (playback.currentStepIndex > 0) {
+                                    goToStep(playback.currentStepIndex - 1);
+                                }
+                            }}
+                            className="border-[rgba(240,240,240,0.2)] hover:bg-[rgba(240,240,240,0.05)]"
+                        >
+                            <SkipBack className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            size="icon"
+                            onClick={playback.isPlaying ? pause : play}
+                        >
+                            {playback.isPlaying ? (
+                                <Pause className="h-4 w-4" />
+                            ) : (
+                                <Play className="h-4 w-4" />
+                            )}
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={nextStep}
+                            className="border-[rgba(240,240,240,0.2)] hover:bg-[rgba(240,240,240,0.05)]"
+                        >
+                            <SkipForward className="h-4 w-4" />
+                        </Button>
+                    </div>
+
+                    <div className="space-y-2">
+                        <div className="flex justify-between text-sm text-[#f0f0f0]">
+                            <span>Step {playback.currentStepIndex + 1}</span>
+                            <span>of {steps.length}</span>
                         </div>
-                    </CardContent>
-                </Card>
+                        <Slider
+                            value={[playback.currentStepIndex + 1]}
+                            min={0}
+                            max={steps.length}
+                            step={1}
+                            onValueChange={([v]) => {
+                                const { goToStep, clearVisualization } = useAppStore.getState();
+                                if (v === 0) {
+                                    clearVisualization();
+                                } else {
+                                    goToStep(v - 1);
+                                }
+                            }}
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label className="text-[#f0f0f0]">Speed: {playback.speed}ms</Label>
+                        <Slider
+                            value={[playback.speed]}
+                            min={100}
+                            max={2000}
+                            step={100}
+                            onValueChange={([v]) => setSpeed(v)}
+                        />
+                    </div>
+                </div>
             )}
         </div>
     );

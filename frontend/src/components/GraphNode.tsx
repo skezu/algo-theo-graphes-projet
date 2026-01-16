@@ -40,11 +40,11 @@ function GraphNode({ id, data }: NodeProps<GraphNodeType>) {
                     isInPath && !isCurrent && 'in-path'
                 )}
             >
-                <div className="font-semibold text-sm text-[hsl(213,31%,91%)] tracking-tight">
+                <div className="font-bold text-base text-[#f0f0f0] tracking-normal">
                     {data.label}
                 </div>
                 {data.distance !== undefined && (
-                    <div className="text-xs text-[hsl(215,20%,65%)] mt-1.5 font-medium">
+                    <div className="text-sm text-[rgba(240,240,240,0.7)] mt-1.5 font-medium">
                         d: {data.distance === Infinity ? '∞' : data.distance}
                     </div>
                 )}

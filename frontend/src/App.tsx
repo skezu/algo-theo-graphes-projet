@@ -27,25 +27,25 @@ export default function App() {
     }, [playback.isPlaying, playback.speed, nextStep, steps.length]);
 
     return (
-        <div className="h-screen w-screen flex dark bg-[hsl(224,71%,4%)] overflow-hidden">
+        <div className="h-screen w-screen flex bg-[#1a1a1a] overflow-hidden">
             {/* Left Sidebar - Controls */}
-            <aside className="w-80 min-w-80 border-r border-[hsl(223,47%,14%)] bg-[hsl(224,71%,5%)]/80 backdrop-blur-xl animate-slide-left">
-                <div className="p-5 border-b border-[hsl(223,47%,14%)] sidebar-header">
-                    <h1 className="text-xl font-bold text-gradient tracking-tight">
+            <aside className="w-80 min-w-80 border-r border-[rgba(240,240,240,0.1)] bg-[#1a1a1a] animate-fade-in">
+                <div className="p-5 border-b border-[rgba(240,240,240,0.15)]">
+                    <h1 className="text-xl font-bold text-[#f0f0f0] tracking-tight">
                         Graph Algorithms
                     </h1>
-                    <p className="text-sm text-[hsl(215,20%,55%)] mt-0.5">Interactive Visualizer</p>
+                    <p className="text-sm text-[rgba(240,240,240,0.6)] mt-0.5">Interactive Visualizer</p>
                 </div>
                 <ControlPanel />
             </aside>
 
             {/* Main Canvas */}
-            <main className="flex-1 relative bg-[hsl(224,71%,4%)] animate-fade-in">
+            <main className="flex-1 relative bg-[#1a1a1a] animate-fade-in">
                 <GraphCanvas />
             </main>
 
             {/* Right Sidebar - Steps */}
-            <aside className="w-96 min-w-96 border-l border-[hsl(223,47%,14%)] bg-[hsl(224,71%,5%)]/80 backdrop-blur-xl p-4 animate-slide-right">
+            <aside className="w-96 min-w-96 border-l border-[rgba(240,240,240,0.1)] bg-[#1a1a1a] p-4 animate-fade-in">
                 <StepsPanel />
             </aside>
         </div>

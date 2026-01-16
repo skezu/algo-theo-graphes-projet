@@ -27,15 +27,15 @@
     --ring: 231 97% 66%;
     --radius: 0.75rem;
 
-    /* Algorithm visualization colors */
-    --node-default: 220 14% 96%;
-    --node-visited: 158 64% 52%;
-    --node-current: 45 93% 58%;
-    --node-path: 231 97% 66%;
-    --edge-default: 220 14% 40%;
-    --edge-explored: 45 93% 58%;
-    --edge-path: 231 97% 66%;
-    --edge-mst: 158 64% 52%;
+    /* Algorithm visualization colors - Chalk palette */
+    --node-default: 0 0% 94%;
+    --node-visited: 88 43% 72%;
+    --node-current: 44 74% 72%;
+    --node-path: 200 40% 66%;
+    --edge-default: 0 0% 94%;
+    --edge-explored: 44 74% 72%;
+    --edge-path: 200 40% 66%;
+    --edge-mst: 88 43% 72%;
 
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -44,33 +44,32 @@
     --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.15);
 }
 
-/* Dark mode - refined palette */
+/* Blackboard Theme */
 .dark {
-    --background: 224 71% 4%;
-    --foreground: 213 31% 91%;
-    --card: 224 71% 6%;
-    --card-foreground: 213 31% 91%;
-    --popover: 224 71% 6%;
-    --popover-foreground: 213 31% 91%;
-    --primary: 231 97% 66%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 222 47% 11%;
-    --secondary-foreground: 213 31% 91%;
-    --muted: 223 47% 11%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 222 47% 14%;
-    --accent-foreground: 213 31% 91%;
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 213 31% 91%;
-    --border: 223 47% 14%;
-    --input: 223 47% 14%;
-    --ring: 231 97% 66%;
+    --background: 0 0% 10%;
+    --foreground: 0 0% 94%;
+    --card: 0 0% 16%;
+    --card-foreground: 0 0% 94%;
+    --popover: 0 0% 16%;
+    --popover-foreground: 0 0% 94%;
+    --primary: 200 40% 66%;
+    --primary-foreground: 0 0% 10%;
+    --secondary: 0 0% 16%;
+    --secondary-foreground: 0 0% 94%;
+    --muted: 0 0% 16%;
+    --muted-foreground: 0 0% 84%;
+    --accent: 0 0% 16%;
+    --accent-foreground: 0 0% 94%;
+    --destructive: 0 63% 50%;
+    --destructive-foreground: 0 0% 94%;
+    --border: 0 0% 94% / 0.1;
+    --input: 0 0% 94% / 0.2;
+    --ring: 200 40% 66%;
 
-    /* Shadows for dark mode */
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
-    --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.2);
+    /* Shadows for blackboard */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.6), 0 2px 4px -2px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 8px 12px -2px rgba(0, 0, 0, 0.7), 0 4px 6px -4px rgba(0, 0, 0, 0.6);
 }
 
 /* ============================================
@@ -82,17 +81,16 @@
 }
 
 html {
-    font-size: 16px;
+    font-size: 17px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
-    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
-    line-height: 1.5;
+    background-color: #1a1a1a;
+    color: #f0f0f0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
 }
 
 /* ============================================
@@ -146,17 +144,7 @@ body {
     }
 }
 
-@keyframes pulse-glow {
-
-    0%,
-    100% {
-        box-shadow: 0 0 20px hsl(var(--node-current) / 0.3);
-    }
-
-    50% {
-        box-shadow: 0 0 40px hsl(var(--node-current) / 0.6);
-    }
-}
+/* Removed pulse-glow animation for blackboard theme */
 
 @keyframes shimmer {
     from {
@@ -168,17 +156,7 @@ body {
     }
 }
 
-@keyframes float {
-
-    0%,
-    100% {
-        transform: translateY(0);
-    }
-
-    50% {
-        transform: translateY(-4px);
-    }
-}
+/* Removed float animation for blackboard theme */
 
 .animate-fade-in {
     animation: fadeIn 0.4s ease-out forwards;
@@ -196,13 +174,9 @@ body {
     animation: scaleIn 0.3s ease-out forwards;
 }
 
-.pulse-glow {
-    animation: pulse-glow 1.5s ease-in-out infinite;
-}
+/* Removed .pulse-glow class */
 
-.animate-float {
-    animation: float 3s ease-in-out infinite;
-}
+/* Removed .animate-float class */
 
 /* ============================================
    REACT FLOW CUSTOMIZATION
@@ -309,122 +283,70 @@ body {
    ============================================ */
 .graph-node {
     padding: 14px 22px;
-    border-radius: 16px;
-    background: linear-gradient(145deg, hsl(224 71% 8%) 0%, hsl(222 47% 14%) 100%);
-    border: 2px solid hsl(223 47% 20%);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
-    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 12px;
+    background: #2a2a2a;
+    border: 2px solid rgba(240, 240, 240, 0.3);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    transition: all 0.25s ease;
     position: relative;
-    overflow: hidden;
-}
-
-.graph-node::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.graph-node:hover::before {
-    opacity: 1;
 }
 
 .graph-node:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
-    border-color: hsl(231 97% 66% / 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.6);
+    border-color: rgba(240, 240, 240, 0.5);
 }
 
 /* Visited node state */
 .graph-node.visited {
-    background: linear-gradient(145deg,
-            hsl(158 64% 52% / 0.15) 0%,
-            hsl(158 64% 52% / 0.08) 100%);
-    border-color: hsl(158 64% 52%);
-    box-shadow:
-        0 0 0 1px hsl(158 64% 52% / 0.2),
-        0 0 24px hsl(158 64% 52% / 0.25);
+    background: rgba(155, 206, 143, 0.08);
+    border: 2.5px solid #9bce8f;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-/* Current node state - animated */
+/* Current node state - NO animation*/
 .graph-node.current {
-    background: linear-gradient(145deg,
-            hsl(45 93% 58% / 0.25) 0%,
-            hsl(45 93% 58% / 0.15) 100%);
-    border-color: hsl(45 93% 58%);
-    box-shadow:
-        0 0 0 1px hsl(45 93% 58% / 0.3),
-        0 0 30px hsl(45 93% 58% / 0.4);
-    transform: scale(1.08);
-    animation: pulse-glow 1.5s ease-in-out infinite;
+    background: rgba(244, 212, 124, 0.12);
+    border: 3px solid #f4d47c;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    transform: scale(1.05);
 }
 
 /* Node in final path */
 .graph-node.in-path {
-    background: linear-gradient(145deg,
-            hsl(231 97% 66% / 0.25) 0%,
-            hsl(231 97% 66% / 0.15) 100%);
-    border-color: hsl(231 97% 66%);
-    box-shadow:
-        0 0 0 1px hsl(231 97% 66% / 0.3),
-        0 0 24px hsl(231 97% 66% / 0.35);
+    background: rgba(120, 180, 212, 0.08);
+    border: 2.5px solid #78b4d4;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 /* ============================================
    EDGE STYLES
    ============================================ */
-.edge-explored {
-    stroke: hsl(var(--edge-explored)) !important;
-    stroke-width: 3.5 !important;
-    filter: drop-shadow(0 0 4px hsl(var(--edge-explored) / 0.4));
+.edge-explored .react-flow__edge-path {
+    stroke: #f4d47c !important;
+    stroke-width: 3 !important;
 }
 
-.edge-path {
-    stroke: hsl(var(--edge-path)) !important;
-    stroke-width: 4.5 !important;
-    filter: drop-shadow(0 0 6px hsl(var(--edge-path) / 0.5));
+.edge-path .react-flow__edge-path {
+    stroke: #78b4d4 !important;
+    stroke-width: 4 !important;
 }
 
-.edge-mst {
-    stroke: hsl(var(--edge-mst)) !important;
-    stroke-width: 4.5 !important;
-    filter: drop-shadow(0 0 6px hsl(var(--edge-mst) / 0.5));
+.edge-mst .react-flow__edge-path {
+    stroke: #9bce8f !important;
+    stroke-width: 4 !important;
 }
 
 /* ============================================
-   GLASSMORPHISM PANELS
+   SECTION SEPARATORS & SIDEBARS
    ============================================ */
-.glass-panel {
-    background: hsl(var(--card) / 0.85);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid hsl(var(--border) / 0.6);
-    border-radius: 16px;
-    box-shadow: var(--shadow-lg);
-    transition: all 0.3s ease;
+.section-separator {
+    border-top: 1px solid rgba(240, 240, 240, 0.15);
 }
 
-.glass-panel:hover {
-    border-color: hsl(var(--border));
-    box-shadow: var(--shadow-lg), var(--shadow-glow);
-}
-
-/* ============================================
-   SIDEBAR STYLES
-   ============================================ */
 .sidebar {
-    background: hsl(var(--card) / 0.6);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-color: hsl(var(--border) / 0.4);
-}
-
-.sidebar-header {
-    background: linear-gradient(180deg,
-            hsl(var(--card) / 0.9) 0%,
-            hsl(var(--card) / 0.6) 100%);
+    background: #1a1a1a;
+    border-color: rgba(240, 240, 240, 0.1);
 }
 
 /* ============================================
@@ -436,27 +358,6 @@ button {
 
 button:active {
     transform: scale(0.98);
-}
-
-/* Primary button glow effect */
-.btn-glow {
-    position: relative;
-}
-
-.btn-glow::after {
-    content: '';
-    position: absolute;
-    inset: -2px;
-    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.5) 100%);
-    border-radius: inherit;
-    z-index: -1;
-    opacity: 0;
-    filter: blur(12px);
-    transition: opacity 0.3s ease;
-}
-
-.btn-glow:hover::after {
-    opacity: 0.5;
 }
 
 /* ============================================

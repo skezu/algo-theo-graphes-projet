@@ -4,7 +4,6 @@
 import { useCallback, useEffect } from 'react';
 import {
     ReactFlow,
-    Background,
     Controls,
     Panel,
     useNodesState,
@@ -57,58 +56,51 @@ export default function GraphCanvas() {
             const updatedEdges: Edge[] = storeEdges.map(edge => {
                 let className = '';
                 let style: React.CSSProperties = {
-                    stroke: 'hsl(223 47% 25%)',
-                    strokeWidth: 2.5,
-                    transition: 'stroke 0.35s ease, stroke-width 0.35s ease',
+                    stroke: 'rgba(240,240,240,0.3)',
+                    strokeWidth: 2,
+                    transition: 'stroke 0.3s ease, stroke-width 0.3s ease',
                 };
 
-                // Dynamic label background color based on state
-                let labelBgColor = 'hsl(224 71% 6%)';
-                let labelColor = 'hsl(213 31% 91%)';
+                // Default labels
+                let labelColor = '#f0f0f0';
 
                 // Check if edge is in MST
                 if (mstEdges.has(edge.id) || mstEdges.has(`${edge.target}-${edge.source}`)) {
                     className = 'edge-mst';
-                    style = { ...style, stroke: 'hsl(158 64% 52%)', strokeWidth: 4.5 };
-                    labelBgColor = 'hsl(158 50% 10%)'; // Dark green background
-                    labelColor = 'hsl(158 80% 90%)';
+                    style = { ...style, stroke: '#9bce8f', strokeWidth: 4 };
+                    labelColor = '#9bce8f';
                 }
                 // Check if edge is in final path
                 else if (pathEdges.has(edge.id) || pathEdges.has(`${edge.target}-${edge.source}`)) {
                     className = 'edge-path';
-                    style = { ...style, stroke: 'hsl(231 97% 66%)', strokeWidth: 4.5 };
-                    labelBgColor = 'hsl(231 60% 12%)'; // Dark blue background
-                    labelColor = 'hsl(231 90% 90%)';
+                    style = { ...style, stroke: '#78b4d4', strokeWidth: 4 };
+                    labelColor = '#78b4d4';
                 }
                 // Check if edge was explored
                 else if (exploredEdges.has(edge.id) || exploredEdges.has(`${edge.target}-${edge.source}`)) {
                     className = 'edge-explored';
-                    style = { ...style, stroke: 'hsl(45 93% 58%)', strokeWidth: 3.5 };
-                    labelBgColor = 'hsl(35 60% 12%)'; // Dark amber background
-                    labelColor = 'hsl(45 90% 90%)';
+                    style = { ...style, stroke: '#f4d47c', strokeWidth: 3 };
+                    labelColor = '#f4d47c';
                 }
 
                 return {
                     ...edge,
-                    type: 'smoothstep', // Consistent curve
+                    type: 'smoothstep',
                     className,
                     style,
                     label: edge.label,
                     labelStyle: {
                         fill: labelColor,
-                        fontWeight: 600,
                         fontSize: 12,
-                        fontFamily: 'Inter, system-ui, sans-serif',
-                        textShadow: '0 1px 2px rgba(0,0,0,0.8)'
+                        stroke: 'none',
+                        strokeWidth: 0,
                     },
                     labelBgStyle: {
-                        fill: labelBgColor,
-                        fillOpacity: 1,
-                        stroke: style.stroke,
-                        strokeWidth: 1,
+                        fill: '#1a1a1a',
+                        fillOpacity: 0.9,
                     },
-                    labelBgPadding: [8, 4] as [number, number],
-                    labelBgBorderRadius: 6,
+                    labelBgPadding: [6, 3] as [number, number],
+                    labelBgBorderRadius: 4,
                 };
             });
             setEdges(updatedEdges);
@@ -121,7 +113,7 @@ export default function GraphCanvas() {
 
     if (!isGraphLoaded) {
         return (
-            <div className="w-full h-full flex items-center justify-center bg-[hsl(224,71%,4%)]">
+            <div className="w-full h-full flex items-center justify-center bg-[#1a1a1a]">
                 <div className="empty-state animate-fade-in">
                     <div className="empty-state-icon">📊</div>
                     <h2 className="empty-state-title">Graph Algorithms Visualizer</h2>
@@ -150,11 +142,6 @@ export default function GraphCanvas() {
                 proOptions={{ hideAttribution: true }}
                 defaultEdgeOptions={{ type: 'smoothstep' }}
             >
-                <Background
-                    color="hsl(223 47% 20%)"
-                    gap={24}
-                    size={1.5}
-                />
                 <Controls />
                 <Panel position="bottom-left">
                     <Legend />
