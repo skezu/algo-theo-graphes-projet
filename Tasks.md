@@ -44,6 +44,7 @@
 - [x] Implémenter le frontend React avec React Flow
 - [x] Implémenter la visualisation dynamique des algorithmes
 - [ ] Tester tous les algorithmes visuellement
+- [x] Corriger le crash de l'interface visuelle lors de l'exécution de Dijkstra
 
 ## 8. Améliorations UI/UX (Nouveau)
 - [x] Améliorer le thème sombre avec une palette de couleurs raffinée

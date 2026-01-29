@@ -24,7 +24,7 @@ export default function App() {
         }, playback.speed);
 
         return () => clearInterval(timer);
-    }, [playback.isPlaying, playback.speed, nextStep, steps.length]);
+    }, [playback.isPlaying, playback.speed, nextStep, steps?.length]);
 
     return (
         <div className="h-screen w-screen flex bg-[var(--bg-base)] overflow-hidden">

@@ -95,7 +95,12 @@ export default function ControlPanel() {
                 ALGORITHM_INFO[selectedAlgorithm].needsEndNode ? endNode : undefined
             );
 
-            setAlgorithmResult(result.steps, result.result);
+            if (result && result.steps) {
+                setAlgorithmResult(result.steps, result.result);
+            } else {
+                console.warn('Algorithm returned no steps:', result);
+                setAlgorithmResult([], {});
+            }
         } catch (error) {
             console.error('Algorithm failed:', error);
             alert('Algorithm execution failed.');
@@ -234,7 +239,7 @@ export default function ControlPanel() {
 
                     <Button
                         onClick={handleRunAlgorithm}
-                        disabled={!selectedAlgorithm || !startNode || isRunning}
+                        disabled={!selectedAlgorithm || !startNode || isRunning || (!!algorithmInfo?.needsEndNode && !endNode)}
                         className="w-full mt-2"
                         size="lg"
                     >

@@ -107,8 +107,8 @@ export const useAppStore = create<AppState>((set, get) => ({
     setEndNode: (endNode) => set({ endNode }),
 
     setAlgorithmResult: (steps, result) => set({
-        steps,
-        result,
+        steps: steps || [],
+        result: result || {},
         playback: { ...get().playback, currentStepIndex: -1 },
     }),
 
@@ -196,11 +196,12 @@ export const useAppStore = create<AppState>((set, get) => ({
                 case 'found_path':
                     if (step.data?.path && Array.isArray(step.data.path)) {
                         const path = step.data.path as string[];
+                        const newPathEdges = new Set(state.pathEdges);
                         for (let i = 0; i < path.length - 1; i++) {
-                            newState.pathEdges = new Set(state.pathEdges);
-                            newState.pathEdges.add(`${path[i]}-${path[i + 1]}`);
-                            newState.pathEdges.add(`${path[i + 1]}-${path[i]}`);
+                            newPathEdges.add(`${path[i]}-${path[i + 1]}`);
+                            newPathEdges.add(`${path[i + 1]}-${path[i]}`);
                         }
+                        newState.pathEdges = newPathEdges;
                     }
                     break;
 

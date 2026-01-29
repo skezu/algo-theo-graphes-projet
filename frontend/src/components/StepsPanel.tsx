@@ -17,7 +17,7 @@ export default function StepsPanel() {
         }
     }, [playback.currentStepIndex]);
 
-    if (steps.length === 0) {
+    if (!steps || steps.length === 0) {
         return (
             <div className="h-full flex flex-col">
                 {/* Header */}
