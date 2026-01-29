@@ -4,6 +4,7 @@
 import { useEffect, useRef } from 'react';
 import { useAppStore } from '../lib/store';
 import { cn } from '../lib/utils';
+import { ListOrdered, Search } from 'lucide-react';
 
 export default function StepsPanel() {
     const { steps, playback, result, selectedAlgorithm } = useAppStore();
@@ -18,15 +19,36 @@ export default function StepsPanel() {
 
     if (steps.length === 0) {
         return (
-            <div className="h-full flex flex-col p-6">
-                <div className="pb-6 border-b border-[rgba(240,240,240,0.15)]">
-                    <h2 className="text-xl font-bold text-[#f0f0f0]">
+            <div className="h-full flex flex-col">
+                {/* Header */}
+                <div
+                    className="px-6 py-5"
+                    style={{ borderBottom: '1px solid var(--border-subtle)' }}
+                >
+                    <h2
+                        className="text-lg font-semibold flex items-center gap-2"
+                        style={{ color: 'var(--text-primary)' }}
+                    >
+                        <ListOrdered className="w-5 h-5" style={{ color: 'var(--accent-cyan)' }} />
                         Algorithm Steps
                     </h2>
                 </div>
-                <div className="flex flex-col items-center justify-center text-center py-12 flex-1">
-                    <div className="text-4xl mb-4">🔍</div>
-                    <p className="text-[rgba(240,240,240,0.5)] text-sm max-w-[200px]">
+
+                {/* Empty State */}
+                <div className="flex flex-col items-center justify-center text-center flex-1 px-6">
+                    <div
+                        className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 animate-float"
+                        style={{
+                            background: 'linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%)',
+                            border: '1px solid var(--border-default)'
+                        }}
+                    >
+                        <Search className="w-7 h-7" style={{ color: 'var(--text-tertiary)' }} />
+                    </div>
+                    <p
+                        className="text-sm max-w-[220px] leading-relaxed"
+                        style={{ color: 'var(--text-tertiary)' }}
+                    >
                         Run an algorithm to see the execution steps here.
                     </p>
                 </div>
@@ -52,21 +74,28 @@ export default function StepsPanel() {
     };
 
     return (
-        <div className="h-full flex flex-col p-6">
+        <div className="h-full flex flex-col">
             {/* Header */}
-            <div className="pb-6 border-b border-[rgba(240,240,240,0.15)]">
-                <h2 className="text-xl font-bold text-[#f0f0f0] flex items-center gap-3">
-                    <span>Algorithm Steps</span>
-                    {selectedAlgorithm && (
-                        <span className="text-sm font-medium px-3 py-1 rounded-md bg-[rgba(120,180,212,0.15)] text-[#78b4d4] border border-[rgba(120,180,212,0.3)]">
-                            {selectedAlgorithm.toUpperCase()}
-                        </span>
-                    )}
+            <div
+                className="px-6 py-5 flex items-center justify-between"
+                style={{ borderBottom: '1px solid var(--border-subtle)' }}
+            >
+                <h2
+                    className="text-lg font-semibold flex items-center gap-2"
+                    style={{ color: 'var(--text-primary)' }}
+                >
+                    <ListOrdered className="w-5 h-5" style={{ color: 'var(--accent-cyan)' }} />
+                    Algorithm Steps
                 </h2>
+                {selectedAlgorithm && (
+                    <span className="badge badge-cyan uppercase text-xs font-medium tracking-wide">
+                        {selectedAlgorithm}
+                    </span>
+                )}
             </div>
 
             {/* Steps list */}
-            <div className="flex-1 overflow-y-auto space-y-3 pt-6">
+            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2">
                 {steps.map((step, index) => {
                     const isActive = index === playback.currentStepIndex;
                     const isPast = index < playback.currentStepIndex;
@@ -76,33 +105,45 @@ export default function StepsPanel() {
                             key={index}
                             ref={isActive ? activeStepRef : null}
                             className={cn(
-                                'step-item p-3 rounded-xl border transition-all duration-300',
-                                isActive && 'active bg-[rgba(120,180,212,0.12)] border-[rgba(120,180,212,0.4)] shadow-lg',
-                                isPast && 'opacity-50 bg-[rgba(240,240,240,0.03)] border-transparent',
-                                !isActive && !isPast && 'opacity-30 border-transparent hover:opacity-50'
+                                'step-item',
+                                isActive && 'active',
+                                isPast && 'past',
+                                !isActive && !isPast && 'opacity-40 hover:opacity-60'
                             )}
                             style={{
-                                animationDelay: `${index * 30}ms`
+                                animationDelay: `${index * 20}ms`
                             }}
                         >
                             <div className="flex items-start gap-3">
-                                <span className="text-lg shrink-0">{getStepIcon(step.type)}</span>
+                                <span className="text-base shrink-0">{getStepIcon(step.type)}</span>
                                 <div className="flex-1 min-w-0">
-                                    <div className="text-sm font-medium text-[#f0f0f0] leading-snug">
+                                    <div
+                                        className="text-sm font-medium leading-snug"
+                                        style={{ color: 'var(--text-primary)' }}
+                                    >
                                         {step.description}
                                     </div>
                                     {step.data && Object.keys(step.data).length > 0 && (
-                                        <div className="text-xs text-[rgba(240,240,240,0.7)] mt-1.5 flex flex-wrap gap-x-2 gap-y-1">
+                                        <div
+                                            className="text-xs mt-1.5 flex flex-wrap gap-x-2 gap-y-1"
+                                            style={{ color: 'var(--text-secondary)' }}
+                                        >
                                             {Object.entries(step.data).map(([key, value]) => (
                                                 <span key={key} className="inline-flex items-center gap-1">
-                                                    <span className="text-[rgba(240,240,240,0.5)]">{key}:</span>
+                                                    <span style={{ color: 'var(--text-tertiary)' }}>{key}:</span>
                                                     <span className="font-mono">{JSON.stringify(value)}</span>
                                                 </span>
                                             ))}
                                         </div>
                                     )}
                                 </div>
-                                <span className="text-[10px] font-medium text-[rgba(240,240,240,0.5)] tabular-nums shrink-0">
+                                <span
+                                    className="text-[10px] font-medium tabular-nums shrink-0 px-1.5 py-0.5 rounded"
+                                    style={{
+                                        color: 'var(--text-quaternary)',
+                                        background: isActive ? 'var(--accent-cyan-subtle)' : 'transparent'
+                                    }}
+                                >
                                     #{index + 1}
                                 </span>
                             </div>
@@ -112,12 +153,15 @@ export default function StepsPanel() {
 
                 {/* Result summary */}
                 {result && playback.currentStepIndex >= steps.length - 1 && (
-                    <div className="mt-4 p-4 rounded-xl bg-[rgba(155,206,143,0.12)] border border-[rgba(155,206,143,0.3)] animate-scale-in">
-                        <h4 className="font-semibold text-sm text-[#9bce8f] mb-2 flex items-center gap-2">
+                    <div className="result-card mt-4 animate-scale-in">
+                        <h4 className="result-card-title">
                             <span>✨</span>
                             <span>Result</span>
                         </h4>
-                        <pre className="text-xs text-[#f0f0f0] overflow-x-auto font-mono leading-relaxed">
+                        <pre
+                            className="text-xs overflow-x-auto font-mono leading-relaxed"
+                            style={{ color: 'var(--text-primary)' }}
+                        >
                             {JSON.stringify(result, null, 2)}
                         </pre>
                     </div>
@@ -126,4 +170,3 @@ export default function StepsPanel() {
         </div>
     );
 }
-

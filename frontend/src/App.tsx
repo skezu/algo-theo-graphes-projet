@@ -27,28 +27,59 @@ export default function App() {
     }, [playback.isPlaying, playback.speed, nextStep, steps.length]);
 
     return (
-        <div className="h-screen w-screen flex bg-[#1a1a1a] overflow-hidden">
+        <div className="h-screen w-screen flex bg-[var(--bg-base)] overflow-hidden">
             {/* Left Sidebar - Controls */}
-            <aside className="w-80 min-w-80 border-r border-[rgba(240,240,240,0.1)] bg-[#1a1a1a] animate-fade-in">
-                <div className="p-5 border-b border-[rgba(240,240,240,0.15)]">
-                    <h1 className="text-xl font-bold text-[#f0f0f0] tracking-tight">
+            <aside
+                className="w-80 min-w-80 flex flex-col animate-fade-in"
+                style={{
+                    background: 'var(--bg-elevated)',
+                    borderRight: '1px solid var(--border-subtle)'
+                }}
+            >
+                {/* Header */}
+                <div
+                    className="px-6 py-5"
+                // style={{ borderBottom: '1px solid var(--border-subtle)' }}
+                >
+                    <h1
+                        className="text-xl font-bold tracking-tight"
+                        style={{
+                            background: 'linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            backgroundClip: 'text'
+                        }}
+                    >
                         Graph Algorithms
                     </h1>
-                    <p className="text-sm text-[rgba(240,240,240,0.6)] mt-0.5">Interactive Visualizer</p>
+                    <p
+                        className="text-sm mt-0.5"
+                        style={{ color: 'var(--text-tertiary)' }}
+                    >
+                        Interactive Visualizer
+                    </p>
                 </div>
                 <ControlPanel />
             </aside>
 
             {/* Main Canvas */}
-            <main className="flex-1 relative bg-[#1a1a1a] animate-fade-in">
+            <main
+                className="flex-1 relative animate-fade-in"
+                style={{ background: 'var(--bg-base)' }}
+            >
                 <GraphCanvas />
             </main>
 
             {/* Right Sidebar - Steps */}
-            <aside className="w-96 min-w-96 border-l border-[rgba(240,240,240,0.1)] bg-[#1a1a1a] p-4 animate-fade-in">
+            <aside
+                className="w-[400px] min-w-[400px] flex flex-col animate-fade-in"
+                style={{
+                    background: 'var(--bg-elevated)',
+                    borderLeft: '1px solid var(--border-subtle)'
+                }}
+            >
                 <StepsPanel />
             </aside>
         </div>
     );
 }
-

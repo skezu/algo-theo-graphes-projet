@@ -40,11 +40,17 @@ function GraphNode({ id, data }: NodeProps<GraphNodeType>) {
                     isInPath && !isCurrent && 'in-path'
                 )}
             >
-                <div className="font-bold text-base text-[#f0f0f0] tracking-normal">
+                <div
+                    className="font-semibold text-base tracking-tight"
+                    style={{ color: 'var(--text-primary)' }}
+                >
                     {data.label}
                 </div>
                 {data.distance !== undefined && (
-                    <div className="text-sm text-[rgba(240,240,240,0.7)] mt-1.5 font-medium">
+                    <div
+                        className="text-xs mt-1 font-medium tabular-nums"
+                        style={{ color: 'var(--text-secondary)' }}
+                    >
                         d: {data.distance === Infinity ? '∞' : data.distance}
                     </div>
                 )}

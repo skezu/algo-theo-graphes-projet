@@ -16,6 +16,7 @@ import '@xyflow/react/dist/style.css';
 import { useAppStore } from '@/lib/store';
 import GraphNode from './GraphNode';
 import Legend from './Legend';
+import { Network } from 'lucide-react';
 
 const nodeTypes = {
     default: GraphNode,
@@ -56,31 +57,31 @@ export default function GraphCanvas() {
             const updatedEdges: Edge[] = storeEdges.map(edge => {
                 let className = '';
                 let style: React.CSSProperties = {
-                    stroke: 'rgba(240,240,240,0.3)',
+                    stroke: 'var(--edge-default)',
                     strokeWidth: 2,
                     transition: 'stroke 0.3s ease, stroke-width 0.3s ease',
                 };
 
                 // Default labels
-                let labelColor = '#f0f0f0';
+                let labelColor = 'var(--text-primary)';
 
                 // Check if edge is in MST
                 if (mstEdges.has(edge.id) || mstEdges.has(`${edge.target}-${edge.source}`)) {
                     className = 'edge-mst';
-                    style = { ...style, stroke: '#9bce8f', strokeWidth: 4 };
-                    labelColor = '#9bce8f';
+                    style = { ...style, stroke: 'var(--edge-mst)', strokeWidth: 3 };
+                    labelColor = 'var(--accent-green)';
                 }
                 // Check if edge is in final path
                 else if (pathEdges.has(edge.id) || pathEdges.has(`${edge.target}-${edge.source}`)) {
                     className = 'edge-path';
-                    style = { ...style, stroke: '#78b4d4', strokeWidth: 4 };
-                    labelColor = '#78b4d4';
+                    style = { ...style, stroke: 'var(--edge-path)', strokeWidth: 3 };
+                    labelColor = 'var(--accent-cyan)';
                 }
                 // Check if edge was explored
                 else if (exploredEdges.has(edge.id) || exploredEdges.has(`${edge.target}-${edge.source}`)) {
                     className = 'edge-explored';
-                    style = { ...style, stroke: '#f4d47c', strokeWidth: 3 };
-                    labelColor = '#f4d47c';
+                    style = { ...style, stroke: 'var(--edge-explored)', strokeWidth: 2.5 };
+                    labelColor = 'var(--accent-yellow)';
                 }
 
                 return {
@@ -91,16 +92,17 @@ export default function GraphCanvas() {
                     label: edge.label,
                     labelStyle: {
                         fill: labelColor,
-                        fontSize: 12,
+                        fontSize: 11,
+                        fontWeight: 500,
                         stroke: 'none',
                         strokeWidth: 0,
                     },
                     labelBgStyle: {
-                        fill: '#1a1a1a',
-                        fillOpacity: 0.9,
+                        fill: 'var(--bg-secondary)',
+                        fillOpacity: 0.95,
                     },
-                    labelBgPadding: [6, 3] as [number, number],
-                    labelBgBorderRadius: 4,
+                    labelBgPadding: [6, 4] as [number, number],
+                    labelBgBorderRadius: 6,
                 };
             });
             setEdges(updatedEdges);
@@ -113,9 +115,21 @@ export default function GraphCanvas() {
 
     if (!isGraphLoaded) {
         return (
-            <div className="w-full h-full flex items-center justify-center bg-[#1a1a1a]">
+            <div
+                className="w-full h-full flex items-center justify-center"
+                style={{ background: 'var(--bg-base)' }}
+            >
                 <div className="empty-state animate-fade-in">
-                    <div className="empty-state-icon">📊</div>
+                    <div
+                        className="w-24 h-24 rounded-3xl flex items-center justify-center mb-6 animate-float"
+                        style={{
+                            background: 'linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%)',
+                            border: '1px solid var(--border-default)',
+                            boxShadow: 'var(--shadow-lg)'
+                        }}
+                    >
+                        <Network className="w-10 h-10" style={{ color: 'var(--accent-blue)' }} />
+                    </div>
                     <h2 className="empty-state-title">Graph Algorithms Visualizer</h2>
                     <p className="empty-state-description">
                         Load a graph from the control panel to begin visualization
@@ -150,4 +164,3 @@ export default function GraphCanvas() {
         </div>
     );
 }
-
