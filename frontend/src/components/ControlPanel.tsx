@@ -2,9 +2,8 @@
  * Control panel for algorithm selection and execution.
  */
 import { useState } from 'react';
-import { Play, Pause, RotateCcw, SkipForward, SkipBack, Loader2 } from 'lucide-react';
+import { Play, Pause, RotateCcw, SkipForward, SkipBack, Loader2, Sparkles, Zap, ChevronRight } from 'lucide-react';
 import { Button } from './ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Slider } from './ui/slider';
@@ -108,61 +107,74 @@ export default function ControlPanel() {
     const algorithmInfo = selectedAlgorithm ? ALGORITHM_INFO[selectedAlgorithm] : null;
 
     return (
-        <div className="flex flex-col gap-4 p-4 h-full overflow-y-auto">
-            {/* Graph Loading */}
-            <Card className="glass-panel animate-fade-in" style={{ animationDelay: '0ms' }}>
-                <CardHeader className="pb-3">
-                    <CardTitle className="text-base font-semibold text-[hsl(213,31%,91%)] flex items-center gap-2">
-                        <span className="text-lg">📊</span>
-                        Graph Data
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <Button
-                        onClick={handleLoadGraph}
-                        disabled={isLoading}
-                        className="w-full btn-glow"
-                    >
-                        {isLoading ? (
-                            <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Loading...
-                            </>
-                        ) : isGraphLoaded ? (
-                            'Reload Graph'
-                        ) : (
-                            'Load Road Network'
-                        )}
-                    </Button>
-                    {isGraphLoaded && (
-                        <p className="text-sm text-[hsl(158,64%,52%)] mt-3 flex items-center gap-1.5">
-                            <span>✓</span>
-                            {availableNodes.length} nodes loaded
-                        </p>
-                    )}
-                </CardContent>
-            </Card>
+        <div className="flex flex-col gap-5 p-5 flex-1 overflow-y-auto">
+            {/* Section 1: Graph Data */}
+            <div
+                className="section-card"
+                style={{ animationDelay: '50ms' }}
+            >
+                <div className="section-title">
+                    {/* <Sparkles className="w-4 h-4" style={{ color: 'var(--accent-purple)' }} /> */}
+                    <span>Graph Data</span>
+                </div>
 
-            {/* Algorithm Selection */}
-            <Card className="glass-panel animate-fade-in" style={{ animationDelay: '100ms' }}>
-                <CardHeader className="pb-3">
-                    <CardTitle className="text-base font-semibold text-[hsl(213,31%,91%)] flex items-center gap-2">
-                        <span className="text-lg">⚡</span>
-                        Algorithm
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
+                <Button
+                    onClick={handleLoadGraph}
+                    disabled={isLoading}
+                    className="w-full"
+                    size="lg"
+                >
+                    {isLoading ? (
+                        <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Loading...
+                        </>
+                    ) : isGraphLoaded ? (
+                        <>
+                            <RotateCcw className="mr-2 h-4 w-4" />
+                            Reload Graph
+                        </>
+                    ) : (
+                        <>
+                            <ChevronRight className="mr-2 h-4 w-4" />
+                            Load Road Network
+                        </>
+                    )}
+                </Button>
+
+                {isGraphLoaded && (
+                    <p
+                        className="text-sm mt-3 flex items-center gap-2 animate-fade-in"
+                        style={{ color: 'var(--accent-green)' }}
+                    >
+                        <span className="w-2 h-2 rounded-full" style={{ background: 'var(--accent-green)' }}></span>
+                        {availableNodes.length} nodes loaded
+                    </p>
+                )}
+            </div>
+
+            {/* Section 2: Algorithm */}
+            <div
+                className="section-card"
+                style={{ animationDelay: '100ms' }}
+            >
+                <div className="section-title">
+                    {/* <Zap className="w-4 h-4" style={{ color: 'var(--accent-yellow)' }} /> */}
+                    <span>Algorithm</span>
+                </div>
+
+                <div className="space-y-4">
                     <div className="space-y-2">
-                        <Label className="text-sm font-medium text-[hsl(215,20%,65%)]">Select Algorithm</Label>
+                        <Label className="form-label">Select Algorithm</Label>
                         <Select
                             value={selectedAlgorithm || ''}
                             onValueChange={(v) => setSelectedAlgorithm(v as AlgorithmName)}
                             disabled={!isGraphLoaded}
                         >
-                            <SelectTrigger className="bg-[hsl(222,47%,11%)] border-[hsl(223,47%,18%)] hover:border-[hsl(231,97%,66%)]/50 transition-colors">
+                            <SelectTrigger>
                                 <SelectValue placeholder="Choose an algorithm" />
                             </SelectTrigger>
-                            <SelectContent className="bg-[hsl(224,71%,6%)] border-[hsl(223,47%,18%)]">
+                            <SelectContent>
                                 <SelectItem value="bfs">BFS (Breadth-First)</SelectItem>
                                 <SelectItem value="dfs">DFS (Depth-First)</SelectItem>
                                 <SelectItem value="dijkstra">Dijkstra</SelectItem>
@@ -174,22 +186,25 @@ export default function ControlPanel() {
                     </div>
 
                     {algorithmInfo && (
-                        <p className="text-sm text-[hsl(215,20%,65%)] leading-relaxed">
+                        <p
+                            className="text-sm leading-relaxed"
+                            style={{ color: 'var(--text-secondary)' }}
+                        >
                             {algorithmInfo.description}
                         </p>
                     )}
 
                     <div className="space-y-2">
-                        <Label className="text-sm font-medium text-[hsl(215,20%,65%)]">Start Node</Label>
+                        <Label className="form-label">Start Node</Label>
                         <Select
                             value={startNode}
                             onValueChange={setStartNode}
                             disabled={!isGraphLoaded}
                         >
-                            <SelectTrigger className="bg-[hsl(222,47%,11%)] border-[hsl(223,47%,18%)] hover:border-[hsl(231,97%,66%)]/50 transition-colors">
+                            <SelectTrigger>
                                 <SelectValue placeholder="Select start" />
                             </SelectTrigger>
-                            <SelectContent className="bg-[hsl(224,71%,6%)] border-[hsl(223,47%,18%)]">
+                            <SelectContent>
                                 {availableNodes.map(node => (
                                     <SelectItem key={node} value={node}>{node}</SelectItem>
                                 ))}
@@ -199,16 +214,16 @@ export default function ControlPanel() {
 
                     {algorithmInfo?.needsEndNode && (
                         <div className="space-y-2">
-                            <Label className="text-sm font-medium text-[hsl(215,20%,65%)]">End Node (optional)</Label>
+                            <Label className="form-label">End Node (optional)</Label>
                             <Select
                                 value={endNode}
                                 onValueChange={setEndNode}
                                 disabled={!isGraphLoaded}
                             >
-                                <SelectTrigger className="bg-[hsl(222,47%,11%)] border-[hsl(223,47%,18%)] hover:border-[hsl(231,97%,66%)]/50 transition-colors">
+                                <SelectTrigger>
                                     <SelectValue placeholder="Select end" />
                                 </SelectTrigger>
-                                <SelectContent className="bg-[hsl(224,71%,6%)] border-[hsl(223,47%,18%)]">
+                                <SelectContent>
                                     {availableNodes.filter(n => n !== startNode).map(node => (
                                         <SelectItem key={node} value={node}>{node}</SelectItem>
                                     ))}
@@ -220,7 +235,8 @@ export default function ControlPanel() {
                     <Button
                         onClick={handleRunAlgorithm}
                         disabled={!selectedAlgorithm || !startNode || isRunning}
-                        className="w-full btn-glow mt-2"
+                        className="w-full mt-2"
+                        size="lg"
                     >
                         {isRunning ? (
                             <>
@@ -234,84 +250,95 @@ export default function ControlPanel() {
                             </>
                         )}
                     </Button>
-                </CardContent>
-            </Card>
+                </div>
+            </div>
 
-            {/* Playback Controls */}
+            {/* Section 3: Playback (conditional) */}
             {steps.length > 0 && (
-                <Card className="glass-panel animate-fade-in" style={{ animationDelay: '200ms' }}>
-                    <CardHeader className="pb-3">
-                        <CardTitle className="text-base font-semibold text-[hsl(213,31%,91%)] flex items-center gap-2">
-                            <span className="text-lg">▶️</span>
-                            Playback
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="flex items-center justify-center gap-2">
-                            <Button variant="outline" size="icon" onClick={reset} className="border-[hsl(223,47%,18%)] hover:bg-[hsl(222,47%,14%)] hover:border-[hsl(231,97%,66%)]/50">
-                                <RotateCcw className="h-4 w-4" />
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => {
-                                    reset();
-                                    const { goToStep } = useAppStore.getState();
-                                    if (playback.currentStepIndex > 0) {
-                                        goToStep(playback.currentStepIndex - 1);
-                                    }
-                                }}
-                            >
-                                <SkipBack className="h-4 w-4" />
-                            </Button>
-                            <Button
-                                size="icon"
-                                onClick={playback.isPlaying ? pause : play}
-                            >
-                                {playback.isPlaying ? (
-                                    <Pause className="h-4 w-4" />
-                                ) : (
-                                    <Play className="h-4 w-4" />
-                                )}
-                            </Button>
-                            <Button variant="outline" size="icon" onClick={nextStep}>
-                                <SkipForward className="h-4 w-4" />
-                            </Button>
-                        </div>
+                <div
+                    className="section-card animate-scale-in"
+                >
+                    <div className="section-title">
+                        <Play className="w-4 h-4" style={{ color: 'var(--accent-cyan)' }} />
+                        <span>Playback</span>
+                    </div>
 
-                        <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                                <span>Step {playback.currentStepIndex + 1}</span>
-                                <span>of {steps.length}</span>
-                            </div>
-                            <Slider
-                                value={[playback.currentStepIndex + 1]}
-                                min={0}
-                                max={steps.length}
-                                step={1}
-                                onValueChange={([v]) => {
-                                    const { goToStep, clearVisualization } = useAppStore.getState();
-                                    if (v === 0) {
-                                        clearVisualization();
-                                    } else {
-                                        goToStep(v - 1);
-                                    }
-                                }}
-                            />
-                        </div>
+                    <div className="flex items-center justify-center gap-2 mb-4">
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={reset}
+                        >
+                            <RotateCcw className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => {
+                                reset();
+                                const { goToStep } = useAppStore.getState();
+                                if (playback.currentStepIndex > 0) {
+                                    goToStep(playback.currentStepIndex - 1);
+                                }
+                            }}
+                        >
+                            <SkipBack className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            size="icon"
+                            onClick={playback.isPlaying ? pause : play}
+                            className="w-11 h-11"
+                        >
+                            {playback.isPlaying ? (
+                                <Pause className="h-5 w-5" />
+                            ) : (
+                                <Play className="h-5 w-5" />
+                            )}
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={nextStep}
+                        >
+                            <SkipForward className="h-4 w-4" />
+                        </Button>
+                    </div>
 
-                        <div className="space-y-2">
-                            <Label>Speed: {playback.speed}ms</Label>
-                            <Slider
-                                value={[playback.speed]}
-                                min={100}
-                                max={2000}
-                                step={100}
-                                onValueChange={([v]) => setSpeed(v)}
-                            />
+                    <div className="space-y-3">
+                        <div
+                            className="flex justify-between text-sm"
+                            style={{ color: 'var(--text-secondary)' }}
+                        >
+                            <span>Step {playback.currentStepIndex + 1}</span>
+                            <span>of {steps.length}</span>
                         </div>
-                    </CardContent>
-                </Card>
+                        <Slider
+                            value={[playback.currentStepIndex + 1]}
+                            min={0}
+                            max={steps.length}
+                            step={1}
+                            onValueChange={([v]) => {
+                                const { goToStep, clearVisualization } = useAppStore.getState();
+                                if (v === 0) {
+                                    clearVisualization();
+                                } else {
+                                    goToStep(v - 1);
+                                }
+                            }}
+                        />
+                    </div>
+
+                    <div className="space-y-2 mt-4">
+                        <Label className="form-label">Speed: {playback.speed}ms</Label>
+                        <Slider
+                            value={[playback.speed]}
+                            min={100}
+                            max={2000}
+                            step={100}
+                            onValueChange={([v]) => setSpeed(v)}
+                        />
+                    </div>
+                </div>
             )}
         </div>
     );
