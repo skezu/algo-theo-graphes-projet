@@ -89,21 +89,37 @@ export default function ControlPanel() {
         reset();
 
         try {
-            const result = await runAlgorithm(
+            const rawResult = await runAlgorithm(
                 selectedAlgorithm,
                 startNode,
                 ALGORITHM_INFO[selectedAlgorithm].needsEndNode ? endNode : undefined
             );
 
-            if (result && result.steps) {
-                setAlgorithmResult(result.steps, result.result);
+            // Robust parsing: Handle string responses or nested data wrappers
+            let data = rawResult;
+            if (typeof rawResult === 'string') {
+                try {
+                    data = JSON.parse(rawResult);
+                } catch (e) {
+                    console.error('Failed to parse algorithm result:', e);
+                }
+            }
+
+            // Handle Axios 'data' wrapper if it somehow persists
+            if (data && (data as any).data && !data.steps && !data.result) {
+                data = (data as any).data;
+            }
+
+            if (data && (Array.isArray(data.steps) || data.result)) {
+                setAlgorithmResult(data.steps || [], data.result || {});
             } else {
-                console.warn('Algorithm returned no steps:', result);
+                console.warn('Algorithm returned invalid structure:', data);
                 setAlgorithmResult([], {});
             }
         } catch (error) {
             console.error('Algorithm failed:', error);
             alert('Algorithm execution failed.');
+            setIsRunning(false); // Ensure running state is cleared on error
         } finally {
             setIsRunning(false);
         }
