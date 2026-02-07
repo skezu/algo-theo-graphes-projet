@@ -148,10 +148,19 @@ def bellman_ford(
     for _ in range(len(nodes) - 1):
         modified = False
         for u, v, weight in edges:
+            # Relaxation u -> v
             if distances[u] != float('inf') and distances[u] + weight < distances[v]:
                 distances[v] = distances[u] + weight
                 predecessors[v] = u
                 modified = True
+            
+            # Relaxation v -> u (si graphe non orienté)
+            if not graph.directed:
+                if distances[v] != float('inf') and distances[v] + weight < distances[u]:
+                    distances[u] = distances[v] + weight
+                    predecessors[u] = v
+                    modified = True
+                    
         # Optimisation : si aucune distance n'a changé, on peut arrêter
         if not modified:
              break
@@ -160,7 +169,10 @@ def bellman_ford(
     for u, v, weight in edges:
         if distances[u] != float('inf') and distances[u] + weight < distances[v]:
             raise ValueError("Le graphe contient un cycle de poids négatif.")
-            
+        if not graph.directed:
+            if distances[v] != float('inf') and distances[v] + weight < distances[u]:
+                raise ValueError("Le graphe contient un cycle de poids négatif.")
+    
     return distances, predecessors
 
 
