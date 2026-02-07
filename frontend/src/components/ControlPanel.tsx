@@ -213,7 +213,7 @@ export default function ControlPanel() {
                     className={`flex-1 h-8 text-xs font-medium ${activeTab === 'general' ? 'bg-[var(--bg-elevated)] shadow-sm text-[var(--accent-blue)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
                 >
                     <Network className="w-3.5 h-3.5 mr-2" />
-                    Graph Algorithms
+                    Graph
                 </Button>
                 <Button
                     variant="ghost"
@@ -227,7 +227,7 @@ export default function ControlPanel() {
                     className={`flex-1 h-8 text-xs font-medium ${activeTab === 'pert' ? 'bg-[var(--bg-elevated)] shadow-sm text-[var(--accent-purple)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
                 >
                     <ListTodo className="w-3.5 h-3.5 mr-2" />
-                    PERT Analysis
+                    PERT
                 </Button>
             </div>
 
