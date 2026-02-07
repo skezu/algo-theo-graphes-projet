@@ -46,6 +46,7 @@
 - [x] Intégrer l'algorithme PERT dans l'interface (Éditeur de tâches, Visualisation)
 - [ ] Tester tous les algorithmes visuellement
 - [x] Corriger le crash de l'interface visuelle lors de l'exécution de Dijkstra
+- [x] Corriger le faux positif "Algorithm returned no steps" (Sérialisation Infinity)
 
 ## 8. Améliorations UI/UX (Nouveau)
 - [x] Améliorer le thème sombre avec une palette de couleurs raffinée
