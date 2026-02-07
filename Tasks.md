@@ -57,5 +57,6 @@
 - [x] Affiner l'espacement et la hiérarchie visuelle
 - [x] Ajouter des effets de survol et transitions sur les éléments interactifs
 - [x] Implémenter l'algorithme de layout Dagre (Sugiyama) pour minimiser les croisements d'arêtes
+- [x] Diviser le panneau droit: pseudocode de l'algorithme (haut) + étapes d'exécution (bas)
 ## 9. Documentation (Nouveau)
 - [x] Générer un `README.md` simple avec les commandes d'installation et de lancement

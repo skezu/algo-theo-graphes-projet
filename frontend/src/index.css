@@ -671,6 +671,12 @@ button:active:not(:disabled) {
     border: 1px solid rgba(48, 209, 88, 0.25);
 }
 
+.badge-purple {
+    background: rgba(191, 90, 242, 0.15);
+    color: var(--accent-purple);
+    border: 1px solid rgba(191, 90, 242, 0.25);
+}
+
 /* ============================================
    RESULT CARD
    ============================================ */

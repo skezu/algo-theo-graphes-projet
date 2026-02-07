@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import GraphCanvas from './components/GraphCanvas';
 import ControlPanel from './components/ControlPanel';
 import StepsPanel from './components/StepsPanel';
+import AlgorithmCodePanel from './components/AlgorithmCodePanel';
 import { useAppStore } from './lib/store';
 
 export default function App() {
@@ -70,7 +71,7 @@ export default function App() {
                 <GraphCanvas />
             </main>
 
-            {/* Right Sidebar - Steps */}
+            {/* Right Sidebar - Algorithm Code + Steps */}
             <aside
                 className="w-[400px] min-w-[400px] flex flex-col animate-fade-in"
                 style={{
@@ -78,7 +79,18 @@ export default function App() {
                     borderLeft: '1px solid var(--border-subtle)'
                 }}
             >
-                <StepsPanel />
+                {/* Top Section - Algorithm Code (40%) */}
+                <div
+                    className="h-[40%] min-h-[200px]"
+                    style={{ borderBottom: '1px solid var(--border-default)' }}
+                >
+                    <AlgorithmCodePanel />
+                </div>
+
+                {/* Bottom Section - Execution Steps (60%) */}
+                <div className="flex-1 min-h-0 overflow-hidden">
+                    <StepsPanel />
+                </div>
             </aside>
         </div>
     );
