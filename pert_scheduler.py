@@ -5,7 +5,8 @@ Ce module contient les structures et algorithmes pour l'ordonnancement
 de projet selon la méthode PERT (Program Evaluation and Review Technique).
 """
 
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Any
+from collections import defaultdict
 from dataclasses import dataclass
 
 
@@ -362,11 +363,210 @@ class PertScheduler:
         Note:
             Utilise un tri topologique ou un DFS pour détecter les cycles.
         """
-        try:
-            self.get_topological_sort()
-            return True
-        except ValueError:
-            return False
+    def get_aoa_structure(self) -> Dict[str, Any]:
+        """
+        Génère une structure Activity-on-Arrow (AoA) simplifiée.
+        Les nœuds représentent des événements (étapes).
+        Les arêtes représentent les tâches.
+        """
+        # 1. Identifier les niveaux et les dépendances
+        topo_order = self.get_topological_sort()
+        
+        # Structure de données pour AoA
+        events = {}  # event_id -> {id, label, eet, let}
+        edges = []   # {source, target, label, duration, type}
+        
+        # Start event
+        start_event_id = "Start"
+        events[start_event_id] = {
+            "id": start_event_id, 
+            "label": "Début", 
+            "eet": 0, 
+            "let": 0
+        }
+        
+        # Usage count: combien de fois chaque tâche est utilisée comme prédécesseur direct
+        # dans une signature unique de successeurs.
+        
+        # Group tasks by predecessor signatures to identify junctions
+        pred_signatures = defaultdict(list) # signature -> [task_ids]
+        
+        for task_id in topo_order:
+            task = self.tasks[task_id]
+            # Signature triée pour unicité
+            signature = tuple(sorted(task.predecessors))
+            pred_signatures[signature].append(task_id)
+
+        # Create Junction Nodes for each signature
+        junctions = {} # signature -> node_id
+        
+        # Map: task_id -> "Event where task ends"
+        # Initialement non défini. Sera défini soit par un Junction (merge), soit par un événement unique.
+        task_end_nodes = {} 
+        
+        junction_counter = 1
+        
+        for signature, consumers in pred_signatures.items():
+            if not signature:
+                # No predecessors -> Start Node
+                junctions[signature] = start_event_id
+                continue
+                
+            # Create a Junction Node
+            junction_id = f"J{junction_counter}"
+            junction_counter += 1
+            
+            junctions[signature] = junction_id
+            
+            events[junction_id] = {
+                "id": junction_id,
+                "label": "", # Sera numéroté
+                "eet": 0,
+                "let": float('inf')
+            }
+            
+            # Connect predecessors to this junction
+            for pred_id in signature:
+                # Si pred_id n'a pas encore de noeud de fin assigné:
+                #   Assigner junction_id comme fin de pred_id.
+                # Sinon:
+                #   Ajouter un dummy de task_end_nodes[pred_id] vers junction_id.
+                
+                if pred_id not in task_end_nodes:
+                    task_end_nodes[pred_id] = junction_id
+                else:
+                    # Tâche déjà terminée ailleurs, il faut un dummy pour rejoindre ce groupement
+                    # ID unique pour l'arête dummy
+                    # Avoid duplicated dummies?
+                    edges.append({
+                        "source": task_end_nodes[pred_id],
+                        "target": junction_id,
+                        "label": "",
+                        "task_id": None,
+                        "duration": 0,
+                        "is_dummy": True
+                    })
+
+        # Assign start nodes for tasks based on their predecessor signature
+        task_start_nodes = {}
+        for signature, consumers in pred_signatures.items():
+            junction_id = junctions[signature]
+            for task_id in consumers:
+                task_start_nodes[task_id] = junction_id
+                
+        # Cleanup: Handle tasks that haven't been assigned an end node (Fin du projet)
+        end_event_id = "Fin"
+        events[end_event_id] = {
+            "id": end_event_id,
+            "label": "Fin",
+            "eet": 0,
+            "let": float('inf')
+        }
+        
+        for task_id in self.tasks:
+            if task_id not in task_end_nodes:
+                task_end_nodes[task_id] = end_event_id
+                
+        # Build Task Edges (Nodes -> Nodes)
+        for task_id, task in self.tasks.items():
+            src = task_start_nodes.get(task_id)
+            tgt = task_end_nodes.get(task_id)
+            
+            if src and tgt:
+                # Avoid self loops
+                if src != tgt:
+                     edges.append({
+                        "source": src,
+                        "target": tgt,
+                        "label": f"{task.name}({int(task.duration) if task.duration.is_integer() else task.duration})",
+                        "task_id": task_id,
+                        "duration": task.duration,
+                        "is_dummy": False
+                    })
+        
+        # Recalculate EET for Events (Forward Pass)
+        # Simple recursion with memoization or iterative
+        # Sort nodes topologically? Or simple relaxation loop
+        
+        # Init EET
+        events[start_event_id]["eet"] = 0
+        for eid in events:
+            if eid != start_event_id:
+                events[eid]["eet"] = 0
+
+        # Relaxation (EET)
+        for _ in range(len(events) + 2):
+            for edge in edges:
+                u, v = edge["source"], edge["target"]
+                dur = edge["duration"]
+                if events[u]["eet"] + dur > events[v]["eet"]:
+                    events[v]["eet"] = events[u]["eet"] + dur
+                    
+        project_duration = events[end_event_id]["eet"]
+        
+        # Init LET
+        for eid in events:
+            events[eid]["let"] = float('inf')
+        events[end_event_id]["let"] = project_duration
+        
+        # Relaxation (LET)
+        for _ in range(len(events) + 2):
+            for edge in edges:
+                u, v = edge["source"], edge["target"]
+                dur = edge["duration"]
+                # u -> v. LET[u] <= LET[v] - dur
+                if events[v]["let"] - dur < events[u]["let"]:
+                    events[u]["let"] = events[v]["let"] - dur
+                    
+        # Final Renumbering 1..N
+        # Sort by EET
+        sorted_evts = sorted(events.values(), key=lambda x: (x["eet"], x["id"]))
+        
+        final_nodes = []
+        node_id_map = {} # old_id -> new_id
+        
+        counter = 1
+        for evt in sorted_evts:
+            old_id = evt["id"]
+            if evt["label"] == "Début":
+                new_label = "Début"
+                new_id = "start"
+                final_eet = 0
+                final_let = 0
+            elif evt["label"] == "Fin":
+                new_label = "Fin"
+                new_id = "end"
+                final_eet = evt["eet"]
+                final_let = evt["let"]
+            else:
+                new_label = str(counter)
+                new_id = f"n{counter}"
+                counter += 1
+                final_eet = evt["eet"]
+                final_let = evt["let"]
+            
+            node_id_map[old_id] = new_id
+            
+            final_nodes.append({
+                "id": new_id,
+                "label": new_label,
+                "eet": final_eet,
+                "let": final_let
+            })
+            
+        final_edges = []
+        for i, edge in enumerate(edges):
+            final_edges.append({
+                "id": f"e{i}",
+                "source": node_id_map[edge["source"]],
+                "target": node_id_map[edge["target"]],
+                "label": edge["label"],
+                "is_dummy": edge.get("is_dummy", False),
+                "task_id": edge.get("task_id")
+            })
+            
+        return {"nodes": final_nodes, "edges": final_edges}
+
 
     def load_sample_project(self) -> None:
         """

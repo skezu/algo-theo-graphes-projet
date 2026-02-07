@@ -699,4 +699,8 @@ def traced_pert(tasks: List[Dict[str, Any]]) -> Tuple[List[Any], List[str], List
         for item in full_schedule
     ]
     
-    return schedule_dicts, critical_path, steps
+    
+    # Get AoA structure for visualization
+    aoa_structure = scheduler.get_aoa_structure()
+
+    return schedule_dicts, critical_path, aoa_structure, steps

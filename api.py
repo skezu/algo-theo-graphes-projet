@@ -320,7 +320,7 @@ def run_pert():
         return jsonify({"error": "List of tasks is required"}), 400
     
     try:
-        schedule, critical_path, steps = traced_pert(tasks_data)
+        schedule, critical_path, aoa, steps = traced_pert(tasks_data)
         
         # Calculate project duration
         project_duration = 0
@@ -331,7 +331,8 @@ def run_pert():
             "result": {
                 "schedule": schedule,
                 "criticalPath": critical_path,
-                "projectDuration": project_duration
+                "projectDuration": project_duration,
+                "aoa": aoa
             },
             "steps": steps
         })

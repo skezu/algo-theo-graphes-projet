@@ -5,87 +5,80 @@
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 
 interface PertNodeData extends Record<string, unknown> {
-    label: string; // Task Name
-    duration: number;
+    label: string; // Event Name / Number
+    eet?: number;  // Earliest Event Time
+    let?: number;  // Latest Event Time
+    // Legacy support (optional, can be removed if sure)
     es?: number;
-    ef?: number;
     ls?: number;
-    lf?: number;
-    float?: number;
+    description?: string;
     isCritical?: boolean;
 }
 
 export default function PertNode({ data, selected }: NodeProps) {
     const pertData = data as unknown as PertNodeData;
-    const { label, duration, es, ef, ls, lf, float, isCritical } = pertData;
+    const { label, eet, let: latestEventTime, es, ls, isCritical } = pertData;
 
-    const baseColor = isCritical ? 'var(--accent-red)' : 'var(--accent-blue)';
-    const bgColor = isCritical ? 'rgba(239, 68, 68, 0.1)' : 'rgba(59, 130, 246, 0.1)';
+    // Fallback for compatibility during transition (if needed)
+    const displayEET = eet !== undefined ? eet : es;
+    const displayLET = latestEventTime !== undefined ? latestEventTime : ls;
+
+    // Determine border color based on criticality (or just blue by default for events?)
+    // In AoA, Critical Path is edges (tasks) and Nodes (Events) where EET=LET.
+    // So if EET=LET, the event is on critical path.
+    const onCriticalPath = isCritical || (displayEET !== undefined && displayEET === displayLET);
+
+    // User requested "ignore white theme" -> focusing on structure.
+    // Critical nodes often red or highlighted.
+    const borderColor = onCriticalPath ? '#ef4444' : '#3b82f6';
+
+    const bgColor = 'var(--bg-elevated)';
 
     return (
         <div
-            className={`pert-node shadow-md rounded-md overflow-hidden transition-all duration-300 ${selected ? 'ring-2 ring-offset-2 ring-offset-[var(--bg-base)]' : ''}`}
+            className={`pert-node-circle relative flex flex-col rounded-full overflow-hidden transition-all duration-300 ${selected ? 'ring-2 ring-offset-2 ring-offset-[var(--bg-base)]' : ''}`}
             style={{
-                background: 'var(--bg-elevated)',
-                border: `1px solid ${isCritical ? 'var(--accent-red)' : 'var(--border-default)'}`,
-                minWidth: '180px',
+                background: bgColor,
+                border: `2px solid ${borderColor}`,
+                width: '90px',
+                height: '90px',
+                boxShadow: selected ? `0 0 0 2px ${borderColor}` : isCritical ? '0 0 10px rgba(239, 68, 68, 0.2)' : '0 4px 6px rgba(0, 0, 0, 0.1)',
                 color: 'var(--text-primary)',
-                boxShadow: selected ? `0 0 0 2px ${baseColor}` : 'none',
             }}
         >
             <Handle
                 type="target"
                 position={Position.Left}
-                style={{ background: baseColor, width: 8, height: 8 }}
+                style={{ background: borderColor, width: 6, height: 6, opacity: 0.8 }}
             />
 
-            {/* Top Row: ES | Duration | EF */}
-            <div className="grid grid-cols-3 text-xs border-b" style={{ borderColor: 'var(--border-subtle)' }}>
-                <div className="p-1 text-center border-r" style={{ borderColor: 'var(--border-subtle)' }}>
-                    <span className="block text-[10px] text-[var(--text-tertiary)]">ES</span>
-                    {es !== undefined ? es : '-'}
-                </div>
-                <div className="p-1 text-center border-r" style={{ borderColor: 'var(--border-subtle)' }}>
-                    <span className="block text-[10px] text-[var(--text-tertiary)]">Dur</span>
-                    {duration}
-                </div>
-                <div className="p-1 text-center">
-                    <span className="block text-[10px] text-[var(--text-tertiary)]">EF</span>
-                    {ef !== undefined ? ef : '-'}
-                </div>
+            {/* Top Half: Event Label (Number) */}
+            <div className="h-1/2 flex flex-col items-center justify-center border-b border-[var(--border-subtle)] bg-white/5 w-full">
+                <span className="font-bold text-lg leading-none" title={label}>
+                    {label}
+                </span>
             </div>
 
-            {/* Middle Row: Task Name */}
-            <div
-                className="p-2 text-center font-bold text-sm truncate"
-                style={{ background: bgColor }}
-                title={label}
-            >
-                {label}
-            </div>
-
-            {/* Bottom Row: LS | Float | LF */}
-            <div className="grid grid-cols-3 text-xs border-t" style={{ borderColor: 'var(--border-subtle)' }}>
-                <div className="p-1 text-center border-r" style={{ borderColor: 'var(--border-subtle)' }}>
-                    <span className="block text-[10px] text-[var(--text-tertiary)]">LS</span>
-                    {ls !== undefined ? ls : '-'}
-                </div>
-                <div className="p-1 text-center border-r" style={{ borderColor: 'var(--border-subtle)' }}>
-                    <span className="block text-[10px] text-[var(--text-tertiary)]">Float</span>
-                    <span style={{ color: float === 0 ? 'var(--accent-red)' : 'inherit' }}>
-                        {float !== undefined ? float : '-'}
+            {/* Bottom Half: EET | LET */}
+            <div className="h-1/2 flex w-full">
+                {/* Left: EET (Green) */}
+                <div className="w-1/2 flex items-center justify-center border-r border-[var(--border-subtle)]">
+                    <span className="font-bold text-xs" style={{ color: 'var(--accent-green)' }}>
+                        {displayEET !== undefined ? displayEET : '?'}
                     </span>
                 </div>
-                <div className="p-1 text-center">
-                    <span className="block text-[10px] text-[var(--text-tertiary)]">LF</span>
-                    {lf !== undefined ? lf : '-'}
+                {/* Right: LET (Red) */}
+                <div className="w-1/2 flex items-center justify-center">
+                    <span className="font-bold text-xs" style={{ color: 'var(--accent-red)' }}>
+                        {displayLET !== undefined ? displayLET : '?'}
+                    </span>
                 </div>
             </div>
 
             <Handle
                 type="source"
                 position={Position.Right}
-                style={{ background: baseColor, width: 8, height: 8 }}
+                style={{ background: borderColor, width: 6, height: 6, opacity: 0.8 }}
             />
         </div>
     );

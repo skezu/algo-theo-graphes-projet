@@ -58,44 +58,49 @@ export default function ControlPanel() {
         }
     }, [selectedAlgorithm, pertTasks]); */
 
-    const updatePertGraph = (schedule: any[] = []) => {
-        const nodes: Node[] = pertTasks.map(task => {
-            const scheduledTask = schedule.find(s => s.taskId === task.id);
-            return {
-                id: task.id,
+    const updatePertGraph = (schedule: any[] = [], aoaData: any = null) => {
+        if (aoaData) {
+            // Use AoA structure from backend
+            const nodes: Node[] = aoaData.nodes.map((n: any) => ({
+                id: n.id,
                 type: 'pert',
-                position: { x: 0, y: 0 }, // Auto layout will fix this
+                position: { x: 0, y: 0 },
                 data: {
-                    label: task.name,
-                    id: task.id,
-                    duration: task.duration,
-                    es: scheduledTask?.earliestStart,
-                    ef: scheduledTask?.earliestFinish,
-                    ls: scheduledTask?.latestStart,
-                    lf: scheduledTask?.latestFinish,
-                    float: scheduledTask?.totalFloat,
-                    isCritical: scheduledTask?.isCritical
+                    label: n.label,
+                    eet: n.eet,
+                    let: n.let,
+                    // If backend sets isCritical on nodes (implied by EET=LET), we can pass it
+                    isCritical: n.eet === n.let
                 }
-            };
-        });
+            }));
 
-        const edges: Edge[] = [];
-        pertTasks.forEach(task => {
-            task.predecessors.forEach(predId => {
-                edges.push({
-                    id: `${predId}-${task.id}`,
-                    source: predId,
-                    target: task.id,
-                    type: 'smoothstep',
-                    animated: false,
-                    style: { stroke: 'var(--edge-default)', strokeWidth: 2 }
-                });
-            });
-        });
+            const edges: Edge[] = aoaData.edges.map((e: any) => ({
+                id: e.id,
+                source: e.source,
+                target: e.target,
+                label: e.label,
+                type: e.is_dummy ? 'default' : 'smoothstep', // Dummies default (bezier) or straight?
+                animated: e.is_dummy,
+                style: {
+                    stroke: e.is_dummy ? 'var(--text-tertiary)' : 'var(--text-primary)',
+                    strokeWidth: e.is_dummy ? 1.5 : 2,
+                    strokeDasharray: e.is_dummy ? '5,5' : 'none'
+                },
+                markerEnd: { type: 'arrowclosed' },
+            }));
 
-        setNodes(nodes);
-        setEdges(edges);
-        setGraphLoaded(true); // Triggers layout
+            setNodes(nodes);
+            setEdges(edges);
+            setGraphLoaded(true);
+            return;
+        }
+
+        // Fallback or Initial State (AoN placeholder if needed, or clear)
+        // Leaving existing logic for now but might need adjustment
+        /* const nodes: Node[] = ... */
+        setNodes([]);
+        setEdges([]);
+        setGraphLoaded(true);
     };
 
     const handleLoadGraph = async () => {
@@ -147,8 +152,14 @@ export default function ControlPanel() {
 
             if (selectedAlgorithm === 'pert') {
                 data = await runPert(pertTasks);
-                if (data.result && data.result.schedule) {
-                    updatePertGraph(data.result.schedule as any[]);
+                if (data.result) {
+                    // Update visualization with AoA data if available
+                    if (data.result.aoa) {
+                        updatePertGraph(data.result.schedule, data.result.aoa);
+                    } else if (data.result.schedule) {
+                        // Fallback to old behavior (should not happen with new backend)
+                        updatePertGraph(data.result.schedule);
+                    }
                 }
             } else {
                 data = await runAlgorithm(
