@@ -1,14 +1,7 @@
-"""
-Module algorithms_trace.py - Traced versions of graph algorithms.
-
-This module provides versions of the graph algorithms that return
-a step-by-step trace of their execution for visualization purposes.
-"""
-
 from typing import List, Dict, Tuple, Any, Optional
 from collections import deque
 from graph import Graph
-
+from pert_scheduler import PertScheduler
 
 class Step:
     """Represents a single step in algorithm execution."""
@@ -558,3 +551,152 @@ def traced_bellman_ford(
     ).to_dict())
     
     return distances, predecessors, has_negative_cycle, steps
+
+def traced_pert(tasks: List[Dict[str, Any]]) -> Tuple[List[Any], List[str], List[Dict]]:
+    """
+    PERT algorithm with execution trace.
+    
+    Args:
+        tasks: List of dicts with keys 'id', 'name', 'duration', 'predecessors'
+        
+    Returns:
+        Tuple of (schedule_result, critical_path, trace_steps)
+    """
+    scheduler = PertScheduler()
+    for task in tasks:
+        scheduler.add_task(
+            task['id'], 
+            task['name'], 
+            task['duration'], 
+            task.get('predecessors', [])
+        )
+    
+    steps = []
+    
+    # 1. Validation
+    steps.append(Step("init", "", "Initializing PERT analysis").to_dict())
+    
+    try:
+        topo_order = scheduler.get_topological_sort()
+        steps.append(Step("info", "", "Topological sort completed", {"order": topo_order}).to_dict())
+    except ValueError as e:
+        steps.append(Step("error", "", str(e)).to_dict())
+        return [], [], steps
+
+    # 2. Forward Pass (ES, EF)
+    steps.append(Step("phase", "", "Phase 1: Forward Pass (Earliest Dates)").to_dict())
+    earliest_dates = {}
+    
+    for t_id in topo_order:
+        task = scheduler.tasks[t_id]
+        
+        # Calculate start time
+        start_time = 0.0
+        contributing_pred = None
+        
+        for pred_id in task.predecessors:
+            if pred_id in earliest_dates:
+                _, pred_finish = earliest_dates[pred_id]
+                if pred_finish > start_time:
+                    start_time = pred_finish
+                    contributing_pred = pred_id
+        
+        finish_time = start_time + task.duration
+        earliest_dates[t_id] = (start_time, finish_time)
+        
+        log_msg = f"Task {t_id}: ES={start_time}, EF={finish_time}"
+        if contributing_pred:
+            log_msg += f" (constrained by {contributing_pred})"
+            
+        steps.append(Step(
+            "calc_dates",
+            t_id,
+            log_msg,
+            {"es": start_time, "ef": finish_time}
+        ).to_dict())
+
+    # 3. Backward Pass (LS, LF)
+    steps.append(Step("phase", "", "Phase 2: Backward Pass (Latest Dates)").to_dict())
+    
+    project_duration = max(result[1] for result in earliest_dates.values()) if earliest_dates else 0
+    steps.append(Step("info", "", f"Project Duration: {project_duration}").to_dict())
+    
+    latest_dates = {}
+    successors = scheduler._build_successors()
+    reverse_order = topo_order[::-1]
+    
+    for t_id in reverse_order:
+        task = scheduler.tasks[t_id]
+        task_successors = successors[t_id]
+        
+        if not task_successors:
+            finish_time = project_duration
+        else:
+            finish_time = project_duration
+            min_start = float('inf')
+            has_const = False
+            for succ_id in task_successors:
+                if succ_id in latest_dates:
+                    succ_start, _ = latest_dates[succ_id]
+                    if succ_start < min_start:
+                        min_start = succ_start
+                        has_const = True
+            
+            if has_const:
+                finish_time = min_start
+        
+        start_time = finish_time - task.duration
+        latest_dates[t_id] = (start_time, finish_time)
+        
+        steps.append(Step(
+            "calc_dates",
+            t_id,
+            f"Task {t_id}: LS={start_time}, LF={finish_time}",
+            {"ls": start_time, "lf": finish_time}
+        ).to_dict())
+
+    # 4. Critical Path Calculation
+    steps.append(Step("phase", "", "Phase 3: Calculating Margins & Critical Path").to_dict())
+    
+    critical_path = []
+    for t_id in topo_order:
+        es, ef = earliest_dates[t_id]
+        ls, lf = latest_dates[t_id]
+        total_float = round(ls - es, 6)
+        
+        is_critical = abs(total_float) < 1e-6
+        if is_critical:
+            critical_path.append(t_id)
+            
+        steps.append(Step(
+            "calc_float",
+            t_id,
+            f"Task {t_id}: Float={total_float} {'(CRITICAL)' if is_critical else ''}",
+            {"totalFloat": total_float, "isCritical": is_critical}
+        ).to_dict())
+            
+    steps.append(Step(
+        "complete",
+        "",
+        f"PERT Analysis Complete. Critical Path: {' -> '.join(critical_path)}",
+        {"criticalPath": critical_path}
+    ).to_dict())
+    
+    # Get the official full schedule object to return
+    full_schedule = scheduler.get_full_schedule()
+    # Convert dataclasses to dicts for JSON
+    schedule_dicts = [
+        {
+            "taskId": item.task_id,
+            "earliestStart": item.earliest_start,
+            "earliestFinish": item.earliest_finish,
+            "latestStart": item.latest_start,
+            "latestFinish": item.latest_finish,
+            "totalFloat": item.total_float,
+            "freeFloat": item.free_float,
+            "isCritical": item.is_critical
+        }
+        for item in full_schedule
+    ]
+    
+    return schedule_dicts, critical_path, steps

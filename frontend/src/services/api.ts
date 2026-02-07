@@ -116,7 +116,15 @@ export async function runKruskal(): Promise<AlgorithmResponse> {
     return response.data;
 }
 
-export type AlgorithmName = 'bfs' | 'dfs' | 'dijkstra' | 'bellman-ford' | 'prim' | 'kruskal';
+/**
+ * Run PERT analysis.
+ */
+export async function runPert(tasks: any[]): Promise<AlgorithmResponse> {
+    const response = await api.post('/algorithm/pert', { tasks });
+    return response.data;
+}
+
+export type AlgorithmName = 'bfs' | 'dfs' | 'dijkstra' | 'bellman-ford' | 'prim' | 'kruskal' | 'pert';
 
 export const ALGORITHM_INFO: Record<AlgorithmName, {
     name: string;
@@ -159,6 +167,12 @@ export const ALGORITHM_INFO: Record<AlgorithmName, {
         description: 'Builds a Minimum Spanning Tree by adding edges in order of weight.',
         needsEndNode: false,
         category: 'mst',
+    },
+    pert: {
+        name: 'PERT Analysis',
+        description: 'Analyzes project tasks to determine critical path and schedule.',
+        needsEndNode: false,
+        category: 'pathfinding', // Or a new category 'scheduling'? pathfinding is close enough for types
     },
 };
 

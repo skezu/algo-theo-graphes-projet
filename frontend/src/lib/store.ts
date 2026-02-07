@@ -58,6 +58,17 @@ interface AppState {
     // Visualization actions
     applyStep: (step: AlgorithmStep) => void;
     clearVisualization: () => void;
+
+    // PERT state
+    pertTasks: PertTask[];
+    setPertTasks: (tasks: PertTask[]) => void;
+}
+
+export interface PertTask {
+    id: string;
+    name: string;
+    duration: number;
+    predecessors: string[];
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -224,4 +235,13 @@ export const useAppStore = create<AppState>((set, get) => ({
         pathEdges: new Set(),
         mstEdges: new Set(),
     }),
+
+    // PERT state
+    pertTasks: [
+        { id: 'A', name: 'Task A', duration: 3, predecessors: [] },
+        { id: 'B', name: 'Task B', duration: 5, predecessors: ['A'] },
+        { id: 'C', name: 'Task C', duration: 4, predecessors: ['B'] },
+        { id: 'D', name: 'Task D', duration: 3, predecessors: ['C'] },
+    ],
+    setPertTasks: (pertTasks) => set({ pertTasks }),
 }));

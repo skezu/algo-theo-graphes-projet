@@ -15,16 +15,16 @@ import {
 import '@xyflow/react/dist/style.css';
 import { useAppStore } from '@/lib/store';
 import GraphNode from './GraphNode';
+import PertNode from './PertNode';
 import Legend from './Legend';
 import { Network } from 'lucide-react';
 
 const nodeTypes = {
     default: GraphNode,
+    pert: PertNode,
 };
 
-interface GraphNodeData extends Record<string, unknown> {
-    label: string;
-}
+
 
 export default function GraphCanvas() {
     const {
@@ -36,7 +36,7 @@ export default function GraphCanvas() {
         isGraphLoaded,
     } = useAppStore();
 
-    const [nodes, setNodes, onNodesChange] = useNodesState<Node<GraphNodeData>>([]);
+    const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
     // Update nodes from store
@@ -44,8 +44,8 @@ export default function GraphCanvas() {
         if (storeNodes.length > 0) {
             const updatedNodes = storeNodes.map(node => ({
                 ...node,
-                type: 'default' as const,
-                data: node.data as GraphNodeData,
+                type: node.type || 'default',
+                data: node.data as Record<string, unknown>,
             }));
             setNodes(updatedNodes);
         }

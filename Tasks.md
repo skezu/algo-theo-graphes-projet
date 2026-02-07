@@ -29,7 +29,7 @@
 - [x] Implémenter `PertScheduler.calculate_floats`
 - [x] Implémenter `PertScheduler.get_critical_path`
 - [x] Implémenter `PertScheduler.get_full_schedule` et `get_project_duration`
-- [ ] Implémenter `PertScheduler.validate_no_cycles`
+- [x] Implémenter `PertScheduler.validate_no_cycles`
 - [ ] Implémenter `PertScheduler.load_sample_project`
 
 ## 6. Validation et Démonstration
@@ -43,6 +43,7 @@
 - [x] Créer `requirements.txt` (Dépendances Python)
 - [x] Implémenter le frontend React avec React Flow
 - [x] Implémenter la visualisation dynamique des algorithmes
+- [x] Intégrer l'algorithme PERT dans l'interface (Éditeur de tâches, Visualisation)
 - [ ] Tester tous les algorithmes visuellement
 - [x] Corriger le crash de l'interface visuelle lors de l'exécution de Dijkstra
 

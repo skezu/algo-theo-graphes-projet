@@ -116,7 +116,7 @@ class PertScheduler:
                     successors[pred_id].append(task.id)
         return successors
 
-    def _get_topological_sort(self) -> List[str]:
+    def get_topological_sort(self) -> List[str]:
         """Retourne les IDs des tâches triées topologiquement."""
         in_degree = {t_id: len(task.predecessors) for t_id, task in self.tasks.items()}
         successors = self._build_successors()
@@ -151,7 +151,7 @@ class PertScheduler:
         Note:
             Les tâches sans prédécesseur commencent à t=0.
         """
-        topo_order = self._get_topological_sort()
+        topo_order = self.get_topological_sort()
         earliest_dates = {}  # {task_id: (start, finish)}
         
         for t_id in topo_order:
@@ -190,7 +190,7 @@ class PertScheduler:
         # Project duration is the max finish time of all tasks
         project_duration = max(result[1] for result in earliest_dates.values())
         
-        topo_order = self._get_topological_sort()
+        topo_order = self.get_topological_sort()
         reverse_order = topo_order[::-1]
         successors = self._build_successors()
         
@@ -362,9 +362,11 @@ class PertScheduler:
         Note:
             Utilise un tri topologique ou un DFS pour détecter les cycles.
         """
-        raise NotImplementedError(
-            "La méthode validate_no_cycles doit être implémentée."
-        )
+        try:
+            self.get_topological_sort()
+            return True
+        except ValueError:
+            return False
 
     def load_sample_project(self) -> None:
         """

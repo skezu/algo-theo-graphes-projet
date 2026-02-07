@@ -18,7 +18,8 @@ from algorithms_trace import (
     traced_dijkstra,
     traced_prim,
     traced_kruskal,
-    traced_bellman_ford
+    traced_bellman_ford,
+    traced_pert
 )
 
 app = Flask(__name__)
@@ -297,6 +298,35 @@ def run_kruskal():
             "result": {
                 "mstEdges": [{"from": e[0], "to": e[1], "weight": e[2]} for e in mst_edges],
                 "totalWeight": total_weight
+            },
+            "steps": steps
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/algorithm/pert", methods=["POST"])
+def run_pert():
+    """Run PERT analysis and return schedule + trace."""
+    data = request.get_json()
+    tasks_data = data.get("tasks")
+    
+    if not tasks_data or not isinstance(tasks_data, list):
+        return jsonify({"error": "List of tasks is required"}), 400
+    
+    try:
+        schedule, critical_path, steps = traced_pert(tasks_data)
+        
+        # Calculate project duration
+        project_duration = 0
+        if schedule:
+            project_duration = max(item["earliestFinish"] for item in schedule)
+            
+        return jsonify({
+            "result": {
+                "schedule": schedule,
+                "criticalPath": critical_path,
+                "projectDuration": project_duration
             },
             "steps": steps
         })

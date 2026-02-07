@@ -12,10 +12,13 @@ import {
     loadGraph,
     getGraphData,
     runAlgorithm,
+    runPert,
     ALGORITHM_INFO,
     type AlgorithmName
 } from '../services/api';
 import type { Node, Edge } from '@xyflow/react';
+import PertTaskEditor from './PertTaskEditor';
+import { Settings } from 'lucide-react';
 
 export default function ControlPanel() {
     const {
@@ -39,10 +42,60 @@ export default function ControlPanel() {
         reset,
         nextStep,
         setSpeed,
+        pertTasks,
     } = useAppStore();
 
     const [isLoading, setIsLoading] = useState(false);
     const [isRunning, setIsRunning] = useState(false);
+    const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+
+    // Initial render for PERT if needed
+    /* eslint-disable react-hooks/exhaustive-deps */
+    /* useEffect(() => {
+        if (selectedAlgorithm === 'pert' && pertTasks.length > 0) {
+            updatePertGraph(); 
+        }
+    }, [selectedAlgorithm, pertTasks]); */
+
+    const updatePertGraph = (schedule: any[] = []) => {
+        const nodes: Node[] = pertTasks.map(task => {
+            const scheduledTask = schedule.find(s => s.taskId === task.id);
+            return {
+                id: task.id,
+                type: 'pert',
+                position: { x: 0, y: 0 }, // Auto layout will fix this
+                data: {
+                    label: task.name,
+                    id: task.id,
+                    duration: task.duration,
+                    es: scheduledTask?.earliestStart,
+                    ef: scheduledTask?.earliestFinish,
+                    ls: scheduledTask?.latestStart,
+                    lf: scheduledTask?.latestFinish,
+                    float: scheduledTask?.totalFloat,
+                    isCritical: scheduledTask?.isCritical
+                }
+            };
+        });
+
+        const edges: Edge[] = [];
+        pertTasks.forEach(task => {
+            task.predecessors.forEach(predId => {
+                edges.push({
+                    id: `${predId}-${task.id}`,
+                    source: predId,
+                    target: task.id,
+                    type: 'smoothstep',
+                    animated: false,
+                    style: { stroke: 'var(--edge-default)', strokeWidth: 2 }
+                });
+            });
+        });
+
+        setNodes(nodes);
+        setEdges(edges);
+        setGraphLoaded(true); // Triggers layout
+    };
 
     const handleLoadGraph = async () => {
         setIsLoading(true);
@@ -83,23 +136,29 @@ export default function ControlPanel() {
     };
 
     const handleRunAlgorithm = async () => {
-        if (!selectedAlgorithm || !startNode) return;
+        if (!selectedAlgorithm || (selectedAlgorithm !== 'pert' && !startNode)) return;
 
         setIsRunning(true);
         reset();
 
         try {
-            const rawResult = await runAlgorithm(
-                selectedAlgorithm,
-                startNode,
-                ALGORITHM_INFO[selectedAlgorithm].needsEndNode ? endNode : undefined
-            );
+            let data;
 
-            // Robust parsing: Handle string responses or nested data wrappers
-            let data = rawResult;
-            if (typeof rawResult === 'string') {
+            if (selectedAlgorithm === 'pert') {
+                data = await runPert(pertTasks);
+                if (data.result && data.result.schedule) {
+                    updatePertGraph(data.result.schedule as any[]);
+                }
+            } else {
+                data = await runAlgorithm(
+                    selectedAlgorithm,
+                    startNode,
+                    ALGORITHM_INFO[selectedAlgorithm].needsEndNode ? endNode : undefined
+                );
+            }
+            if (typeof data === 'string') {
                 try {
-                    data = JSON.parse(rawResult);
+                    data = JSON.parse(data);
                 } catch (e) {
                     console.error('Failed to parse algorithm result:', e);
                 }
@@ -202,9 +261,32 @@ export default function ControlPanel() {
                                 <SelectItem value="bellman-ford">Bellman-Ford</SelectItem>
                                 <SelectItem value="prim">Prim's MST</SelectItem>
                                 <SelectItem value="kruskal">Kruskal's MST</SelectItem>
+                                <SelectItem value="pert">PERT Analysis</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
+
+                    {selectedAlgorithm === 'pert' && (
+                        <div className="space-y-2 animate-fade-in">
+                            <Label className="form-label">Project Tasks</Label>
+                            <Button
+                                variant="outline"
+                                className="w-full justify-between"
+                                onClick={() => setIsTaskModalOpen(true)}
+                            >
+                                <span>{pertTasks.length} Tasks defined</span>
+                                <Settings className="w-4 h-4 ml-2" />
+                            </Button>
+                            <PertTaskEditor
+                                isOpen={isTaskModalOpen}
+                                onClose={() => {
+                                    setIsTaskModalOpen(false);
+                                    // Update graph preview on close
+                                    if (selectedAlgorithm === 'pert') updatePertGraph();
+                                }}
+                            />
+                        </div>
+                    )}
 
                     {algorithmInfo && (
                         <p
@@ -255,7 +337,7 @@ export default function ControlPanel() {
 
                     <Button
                         onClick={handleRunAlgorithm}
-                        disabled={!selectedAlgorithm || !startNode || isRunning || (!!algorithmInfo?.needsEndNode && !endNode)}
+                        disabled={!selectedAlgorithm || isRunning || (selectedAlgorithm !== 'pert' && (!startNode || (!!algorithmInfo?.needsEndNode && !endNode)))}
                         className="w-full mt-2"
                         size="lg"
                     >
