@@ -62,3 +62,6 @@
 - [x] Rendre les panneaux du pseudocode et des étapes repliables
 ## 9. Documentation (Nouveau)
 - [x] Générer un `README.md` simple avec les commandes d'installation et de lancement
+
+## 10. Configuration & Agent (Nouveau)
+- [x] Générer les règles de pilotage (Steering Rules) pour l'agent
