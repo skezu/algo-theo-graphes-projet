@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Plus, Trash2, Edit2, Save, Clock, Link as LinkIcon, AlertCircle } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -116,8 +117,8 @@ export default function PertTaskEditor({ isOpen, onClose }: PertTaskEditorProps)
         }
     };
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in px-4">
+    return createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in px-4">
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -338,6 +339,7 @@ export default function PertTaskEditor({ isOpen, onClose }: PertTaskEditorProps)
                     )}
                 </AnimatePresence>
             </motion.div>
-        </div>
+        </div>,
+        document.body
     );
 }
