@@ -30,8 +30,34 @@ class Step:
             "type": self.type,
             "targetId": self.target_id,
             "description": self.description,
-            "data": self.data
+            "data": self._sanitize_data(self.data)
         }
+
+    def _sanitize_data(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Recursively sanitize data to be JSON serializable."""
+        if not data:
+            return {}
+            
+        sanitized = {}
+        for key, value in data.items():
+            if isinstance(value, float):
+                if value == float('inf'):
+                    sanitized[key] = "Infinity"
+                elif value == float('-inf'):
+                    sanitized[key] = "-Infinity"
+                else:
+                    sanitized[key] = value
+            elif isinstance(value, dict):
+                sanitized[key] = self._sanitize_data(value)
+            elif isinstance(value, list):
+                sanitized[key] = [
+                    "Infinity" if v == float('inf') else 
+                    "-Infinity" if v == float('-inf') else v 
+                    for v in value
+                ]
+            else:
+                sanitized[key] = value
+        return sanitized
 
 
 def traced_bfs(graph: Graph, start_node: str) -> Tuple[List[str], List[Dict]]:
