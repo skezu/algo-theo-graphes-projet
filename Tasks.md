@@ -61,6 +61,7 @@
 - [x] Diviser le panneau droit: pseudocode de l'algorithme (haut) + étapes d'exécution (bas)
 - [x] Surlignage en temps réel des lignes du pseudocode pendant l'exécution
 - [x] Rendre les panneaux du pseudocode et des étapes repliables
+- [x] Séparer l'interface PERT dans un onglet dédié pour une meilleure ergonomie
 ## 9. Documentation (Nouveau)
 - [x] Générer un `README.md` simple avec les commandes d'installation et de lancement
 
