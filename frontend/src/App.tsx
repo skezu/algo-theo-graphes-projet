@@ -1,15 +1,18 @@
 /**
  * Main App component.
  */
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import GraphCanvas from './components/GraphCanvas';
 import ControlPanel from './components/ControlPanel';
 import StepsPanel from './components/StepsPanel';
 import AlgorithmCodePanel from './components/AlgorithmCodePanel';
 import { useAppStore } from './lib/store';
+import { ChevronDown, ChevronUp, Code2, ListOrdered } from 'lucide-react';
 
 export default function App() {
     const { playback, nextStep, steps } = useAppStore();
+    const [isCodeCollapsed, setIsCodeCollapsed] = useState(false);
+    const [isStepsCollapsed, setIsStepsCollapsed] = useState(false);
 
     // Auto-play effect
     useEffect(() => {
@@ -79,19 +82,97 @@ export default function App() {
                     borderLeft: '1px solid var(--border-subtle)'
                 }}
             >
-                {/* Top Section - Algorithm Code (40%) */}
+                {/* Top Section - Algorithm Code */}
                 <div
-                    className="h-[40%] min-h-[200px]"
-                    style={{ borderBottom: '1px solid var(--border-default)' }}
+                    className="flex flex-col transition-all duration-300 ease-out"
+                    style={{
+                        flex: isCodeCollapsed ? '0 0 auto' : (isStepsCollapsed ? '1 1 auto' : '0 0 40%'),
+                        minHeight: isCodeCollapsed ? 'auto' : '48px',
+                        borderBottom: '1px solid var(--border-default)',
+                        overflow: 'hidden',
+                    }}
                 >
-                    <AlgorithmCodePanel />
+                    {/* Collapsible Header */}
+                    <button
+                        onClick={() => setIsCodeCollapsed(!isCodeCollapsed)}
+                        className="w-full px-6 py-3 flex items-center justify-between shrink-0 hover:bg-[var(--bg-secondary)] transition-colors"
+                        style={{ borderBottom: isCodeCollapsed ? 'none' : '1px solid var(--border-subtle)' }}
+                    >
+                        <h2
+                            className="text-sm font-semibold flex items-center gap-2"
+                            style={{ color: 'var(--text-primary)' }}
+                        >
+                            <Code2 className="w-4 h-4" style={{ color: 'var(--accent-purple)' }} />
+                            Algorithm
+                        </h2>
+                        <div className="flex items-center gap-2">
+                            {isCodeCollapsed ? (
+                                <ChevronDown className="w-4 h-4" style={{ color: 'var(--text-tertiary)' }} />
+                            ) : (
+                                <ChevronUp className="w-4 h-4" style={{ color: 'var(--text-tertiary)' }} />
+                            )}
+                        </div>
+                    </button>
+
+                    {/* Content */}
+                    {!isCodeCollapsed && (
+                        <div className="flex-1 min-h-0 overflow-hidden">
+                            <AlgorithmCodePanel hideHeader />
+                        </div>
+                    )}
                 </div>
 
-                {/* Bottom Section - Execution Steps (60%) */}
-                <div className="flex-1 min-h-0 overflow-hidden">
-                    <StepsPanel />
+                {/* Bottom Section - Execution Steps */}
+                <div
+                    className="flex flex-col transition-all duration-300 ease-out"
+                    style={{
+                        flex: isStepsCollapsed ? '0 0 auto' : '1 1 auto',
+                        minHeight: isStepsCollapsed ? 'auto' : '48px',
+                        overflow: 'hidden',
+                    }}
+                >
+                    {/* Collapsible Header */}
+                    <button
+                        onClick={() => setIsStepsCollapsed(!isStepsCollapsed)}
+                        className="w-full px-6 py-3 flex items-center justify-between shrink-0 hover:bg-[var(--bg-secondary)] transition-colors"
+                        style={{ borderBottom: isStepsCollapsed ? 'none' : '1px solid var(--border-subtle)' }}
+                    >
+                        <h2
+                            className="text-sm font-semibold flex items-center gap-2"
+                            style={{ color: 'var(--text-primary)' }}
+                        >
+                            <ListOrdered className="w-4 h-4" style={{ color: 'var(--accent-cyan)' }} />
+                            Execution Steps
+                            {steps.length > 0 && (
+                                <span
+                                    className="text-[10px] font-medium px-1.5 py-0.5 rounded"
+                                    style={{
+                                        background: 'var(--accent-cyan-subtle)',
+                                        color: 'var(--accent-cyan)'
+                                    }}
+                                >
+                                    {steps.length}
+                                </span>
+                            )}
+                        </h2>
+                        <div className="flex items-center gap-2">
+                            {isStepsCollapsed ? (
+                                <ChevronDown className="w-4 h-4" style={{ color: 'var(--text-tertiary)' }} />
+                            ) : (
+                                <ChevronUp className="w-4 h-4" style={{ color: 'var(--text-tertiary)' }} />
+                            )}
+                        </div>
+                    </button>
+
+                    {/* Content */}
+                    {!isStepsCollapsed && (
+                        <div className="flex-1 min-h-0 overflow-hidden">
+                            <StepsPanel hideHeader />
+                        </div>
+                    )}
                 </div>
             </aside>
         </div>
     );
 }
+

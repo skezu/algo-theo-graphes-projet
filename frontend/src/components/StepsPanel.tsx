@@ -6,7 +6,11 @@ import { useAppStore } from '../lib/store';
 import { cn } from '../lib/utils';
 import { ListOrdered, Search } from 'lucide-react';
 
-export default function StepsPanel() {
+interface StepsPanelProps {
+    hideHeader?: boolean;
+}
+
+export default function StepsPanel({ hideHeader = false }: StepsPanelProps) {
     const { steps, playback, result, selectedAlgorithm } = useAppStore();
     const activeStepRef = useRef<HTMLDivElement>(null);
 
@@ -21,18 +25,20 @@ export default function StepsPanel() {
         return (
             <div className="h-full flex flex-col">
                 {/* Header */}
-                <div
-                    className="px-6 py-5"
-                    style={{ borderBottom: '1px solid var(--border-subtle)' }}
-                >
-                    <h2
-                        className="text-lg font-semibold flex items-center gap-2"
-                        style={{ color: 'var(--text-primary)' }}
+                {!hideHeader && (
+                    <div
+                        className="px-6 py-5"
+                        style={{ borderBottom: '1px solid var(--border-subtle)' }}
                     >
-                        <ListOrdered className="w-5 h-5" style={{ color: 'var(--accent-cyan)' }} />
-                        Algorithm Steps
-                    </h2>
-                </div>
+                        <h2
+                            className="text-lg font-semibold flex items-center gap-2"
+                            style={{ color: 'var(--text-primary)' }}
+                        >
+                            <ListOrdered className="w-5 h-5" style={{ color: 'var(--accent-cyan)' }} />
+                            Algorithm Steps
+                        </h2>
+                    </div>
+                )}
 
                 {/* Empty State */}
                 <div className="flex flex-col items-center justify-center text-center flex-1 px-6">
@@ -76,23 +82,25 @@ export default function StepsPanel() {
     return (
         <div className="h-full flex flex-col">
             {/* Header */}
-            <div
-                className="px-6 py-5 flex items-center justify-between"
-                style={{ borderBottom: '1px solid var(--border-subtle)' }}
-            >
-                <h2
-                    className="text-lg font-semibold flex items-center gap-2"
-                    style={{ color: 'var(--text-primary)' }}
+            {!hideHeader && (
+                <div
+                    className="px-6 py-5 flex items-center justify-between"
+                    style={{ borderBottom: '1px solid var(--border-subtle)' }}
                 >
-                    <ListOrdered className="w-5 h-5" style={{ color: 'var(--accent-cyan)' }} />
-                    Algorithm Steps
-                </h2>
-                {selectedAlgorithm && (
-                    <span className="badge badge-cyan uppercase text-xs font-medium tracking-wide">
-                        {selectedAlgorithm}
-                    </span>
-                )}
-            </div>
+                    <h2
+                        className="text-lg font-semibold flex items-center gap-2"
+                        style={{ color: 'var(--text-primary)' }}
+                    >
+                        <ListOrdered className="w-5 h-5" style={{ color: 'var(--accent-cyan)' }} />
+                        Algorithm Steps
+                    </h2>
+                    {selectedAlgorithm && (
+                        <span className="badge badge-cyan uppercase text-xs font-medium tracking-wide">
+                            {selectedAlgorithm}
+                        </span>
+                    )}
+                </div>
+            )}
 
             {/* Steps list */}
             <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2">

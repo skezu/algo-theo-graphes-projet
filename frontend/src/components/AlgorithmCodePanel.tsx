@@ -197,7 +197,11 @@ const ALGORITHM_CODE: Record<AlgorithmName, AlgorithmCodeData> = {
     }
 };
 
-export default function AlgorithmCodePanel() {
+interface AlgorithmCodePanelProps {
+    hideHeader?: boolean;
+}
+
+export default function AlgorithmCodePanel({ hideHeader = false }: AlgorithmCodePanelProps) {
     const { selectedAlgorithm, steps, playback } = useAppStore();
 
     // Determine which lines to highlight based on current step
@@ -219,18 +223,20 @@ export default function AlgorithmCodePanel() {
         return (
             <div className="h-full flex flex-col">
                 {/* Header */}
-                <div
-                    className="px-6 py-4 shrink-0"
-                    style={{ borderBottom: '1px solid var(--border-subtle)' }}
-                >
-                    <h2
-                        className="text-base font-semibold flex items-center gap-2"
-                        style={{ color: 'var(--text-primary)' }}
+                {!hideHeader && (
+                    <div
+                        className="px-6 py-4 shrink-0"
+                        style={{ borderBottom: '1px solid var(--border-subtle)' }}
                     >
-                        <Code2 className="w-4 h-4" style={{ color: 'var(--accent-purple)' }} />
-                        Algorithm
-                    </h2>
-                </div>
+                        <h2
+                            className="text-base font-semibold flex items-center gap-2"
+                            style={{ color: 'var(--text-primary)' }}
+                        >
+                            <Code2 className="w-4 h-4" style={{ color: 'var(--accent-purple)' }} />
+                            Algorithm
+                        </h2>
+                    </div>
+                )}
 
                 {/* Empty State */}
                 <div className="flex flex-col items-center justify-center text-center flex-1 px-6">
@@ -260,34 +266,36 @@ export default function AlgorithmCodePanel() {
     return (
         <div className="h-full flex flex-col">
             {/* Header */}
-            <div
-                className="px-6 py-4 flex items-center justify-between shrink-0"
-                style={{ borderBottom: '1px solid var(--border-subtle)' }}
-            >
-                <h2
-                    className="text-base font-semibold flex items-center gap-2"
-                    style={{ color: 'var(--text-primary)' }}
+            {!hideHeader && (
+                <div
+                    className="px-6 py-4 flex items-center justify-between shrink-0"
+                    style={{ borderBottom: '1px solid var(--border-subtle)' }}
                 >
-                    <Code2 className="w-4 h-4" style={{ color: 'var(--accent-purple)' }} />
-                    Algorithm
-                </h2>
-                <div className="flex items-center gap-2">
-                    {isRunning && (
-                        <span className="flex items-center gap-1.5 text-[10px] font-medium px-2 py-1 rounded"
-                            style={{
-                                background: 'var(--accent-green-subtle)',
-                                color: 'var(--accent-green)'
-                            }}
-                        >
-                            <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-                            RUNNING
+                    <h2
+                        className="text-base font-semibold flex items-center gap-2"
+                        style={{ color: 'var(--text-primary)' }}
+                    >
+                        <Code2 className="w-4 h-4" style={{ color: 'var(--accent-purple)' }} />
+                        Algorithm
+                    </h2>
+                    <div className="flex items-center gap-2">
+                        {isRunning && (
+                            <span className="flex items-center gap-1.5 text-[10px] font-medium px-2 py-1 rounded"
+                                style={{
+                                    background: 'var(--accent-green-subtle)',
+                                    color: 'var(--accent-green)'
+                                }}
+                            >
+                                <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                                RUNNING
+                            </span>
+                        )}
+                        <span className="badge badge-purple uppercase text-[10px] font-medium tracking-wide">
+                            {selectedAlgorithm}
                         </span>
-                    )}
-                    <span className="badge badge-purple uppercase text-[10px] font-medium tracking-wide">
-                        {selectedAlgorithm}
-                    </span>
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Code Display */}
             <div className="flex-1 overflow-y-auto p-4">
