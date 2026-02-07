@@ -51,7 +51,7 @@ function GraphNode({ id, data }: NodeProps<GraphNodeType>) {
                         className="text-xs mt-1 font-medium tabular-nums"
                         style={{ color: 'var(--text-secondary)' }}
                     >
-                        d: {data.distance === Infinity ? '∞' : data.distance}
+                        d: {data.distance === Infinity || data.distance === 'Infinity' ? '∞' : data.distance}
                     </div>
                 )}
             </div>

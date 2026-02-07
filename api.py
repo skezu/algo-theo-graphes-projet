@@ -208,11 +208,16 @@ def run_dijkstra():
         # Filter out infinity values for JSON serialization
         finite_distances = {k: v for k, v in distances.items() if v != float('inf')}
         
+        # Helper to safely serialize path distance
+        path_distance = distances.get(end_node) if end_node else None
+        if path_distance == float('inf'):
+            path_distance = "Infinity"
+            
         return jsonify({
             "result": {
                 "distances": finite_distances,
                 "path": path,
-                "pathDistance": distances.get(end_node) if end_node else None
+                "pathDistance": path_distance
             },
             "steps": steps
         })

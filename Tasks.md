@@ -62,6 +62,7 @@
 - [x] Surlignage en temps réel des lignes du pseudocode pendant l'exécution
 - [x] Rendre les panneaux du pseudocode et des étapes repliables
 - [x] Séparer l'interface PERT dans un onglet dédié pour une meilleure ergonomie
+- [x] Refondre l'éditeur de tâches PERT avec une vue liste/édition séparée pour éviter l'encombrement
 ## 9. Documentation (Nouveau)
 - [x] Générer un `README.md` simple avec les commandes d'installation et de lancement
 
