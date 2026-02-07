@@ -465,6 +465,7 @@ def traced_bellman_ford(
         for u, v, weight in edges:
             edge_id = f"{u}-{v}"
             
+            # Relaxation u -> v
             if distances[u] != float('inf') and distances[u] + weight < distances[v]:
                 distances[v] = distances[u] + weight
                 predecessors[v] = u
@@ -476,6 +477,20 @@ def traced_bellman_ford(
                     f"Relaxed edge {u} → {v}: new distance = {distances[v]}",
                     {"distance": distances[v], "predecessor": u}
                 ).to_dict())
+
+            # Relaxation v -> u (if undirected)
+            if not graph.directed:
+                if distances[v] != float('inf') and distances[v] + weight < distances[u]:
+                    distances[u] = distances[v] + weight
+                    predecessors[u] = v
+                    updated = True
+                    
+                    steps.append(Step(
+                        "update_distance",
+                        u,
+                        f"Relaxed edge {v} → {u}: new distance = {distances[u]}",
+                        {"distance": distances[u], "predecessor": v}
+                    ).to_dict())
         
         if not updated:
             steps.append(Step(
@@ -488,6 +503,7 @@ def traced_bellman_ford(
     # Check for negative cycles
     has_negative_cycle = False
     for u, v, weight in edges:
+        # Check u -> v
         if distances[u] != float('inf') and distances[u] + weight < distances[v]:
             has_negative_cycle = True
             steps.append(Step(
@@ -496,6 +512,17 @@ def traced_bellman_ford(
                 f"Negative cycle detected via edge {u} → {v}"
             ).to_dict())
             break
+        
+        # Check v -> u (if undirected)
+        if not graph.directed:
+            if distances[v] != float('inf') and distances[v] + weight < distances[u]:
+                has_negative_cycle = True
+                steps.append(Step(
+                    "negative_cycle",
+                    f"{v}-{u}",
+                    f"Negative cycle detected via edge {v} → {u}"
+                ).to_dict())
+                break
     
     steps.append(Step(
         "complete",
