@@ -10,8 +10,9 @@ import dagre from '@dagrejs/dagre';
 const dagreGraph = new dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
 
 // Node dimensions for layout calculation
-const NODE_WIDTH = 140;
-const NODE_HEIGHT = 50;
+const DEFAULT_NODE_WIDTH = 140;
+const DEFAULT_NODE_HEIGHT = 50;
+const PERT_NODE_SIZE = 100; // 90px + buffer
 
 /**
  * Apply automatic layout using Dagre's Sugiyama algorithm.
@@ -34,6 +35,10 @@ export const applyAutoLayout = (
     const isHorizontal = direction === 'LR';
 
     // Configure the graph
+    // Create a new graph if needed or reset existing one. 
+    // Dagre graph is stateful, so creating new instance inside function or resetting is safer.
+    // The global 'dagreGraph' constant might accumulate state if reused without clearing.
+    // The existing code clears nodes, but let's be safe.
     dagreGraph.setGraph({
         rankdir: direction,
         nodesep: 80,    // Horizontal separation between nodes
@@ -43,12 +48,15 @@ export const applyAutoLayout = (
         marginy: 20,
     });
 
-    // Clear previous graph data
+    // Clear previous graph data - critical!
     dagreGraph.nodes().forEach((n) => dagreGraph.removeNode(n));
 
-    // Add nodes to dagre graph
+    // Add nodes to dagre graph with dynamic sizes
     nodes.forEach((node) => {
-        dagreGraph.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
+        const isPert = node.type === 'pert';
+        const width = isPert ? PERT_NODE_SIZE : DEFAULT_NODE_WIDTH;
+        const height = isPert ? PERT_NODE_SIZE : DEFAULT_NODE_HEIGHT;
+        dagreGraph.setNode(node.id, { width, height });
     });
 
     // Add edges to dagre graph
@@ -62,6 +70,9 @@ export const applyAutoLayout = (
     // Apply calculated positions to nodes
     const layoutedNodes = nodes.map((node) => {
         const nodeWithPosition = dagreGraph.node(node.id);
+        const isPert = node.type === 'pert';
+        const width = isPert ? PERT_NODE_SIZE : DEFAULT_NODE_WIDTH;
+        const height = isPert ? PERT_NODE_SIZE : DEFAULT_NODE_HEIGHT;
 
         // Dagre uses center-center anchor, React Flow uses top-left
         // So we need to shift the position
@@ -70,8 +81,8 @@ export const applyAutoLayout = (
             targetPosition: isHorizontal ? Position.Left : Position.Top,
             sourcePosition: isHorizontal ? Position.Right : Position.Bottom,
             position: {
-                x: nodeWithPosition.x - NODE_WIDTH / 2,
-                y: nodeWithPosition.y - NODE_HEIGHT / 2,
+                x: nodeWithPosition.x - width / 2,
+                y: nodeWithPosition.y - height / 2,
             },
         };
 
