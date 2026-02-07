@@ -2,7 +2,7 @@
  * Control panel for algorithm selection and execution.
  */
 import { useState } from 'react';
-import { Play, Pause, RotateCcw, SkipForward, SkipBack, Loader2, Sparkles, Zap, ChevronRight } from 'lucide-react';
+import { Play, Pause, RotateCcw, SkipForward, SkipBack, Loader2, ChevronRight, Network, ListTodo } from 'lucide-react';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -48,6 +48,7 @@ export default function ControlPanel() {
     const [isLoading, setIsLoading] = useState(false);
     const [isRunning, setIsRunning] = useState(false);
     const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState<'general' | 'pert'>('general');
 
     // Initial render for PERT if needed
     /* eslint-disable react-hooks/exhaustive-deps */
@@ -188,261 +189,344 @@ export default function ControlPanel() {
 
     return (
         <div className="flex flex-col gap-5 p-5 flex-1 overflow-y-auto">
-            {/* Section 1: Graph Data */}
-            <div
-                className="section-card"
-                style={{ animationDelay: '50ms' }}
-            >
-                <div className="section-title">
-                    {/* <Sparkles className="w-4 h-4" style={{ color: 'var(--accent-purple)' }} /> */}
-                    <span>Graph Data</span>
-                </div>
-
+            {/* Mode Switcher */}
+            <div className="flex gap-2 p-1 bg-[var(--bg-tertiary)] rounded-lg border border-[var(--border-subtle)]">
                 <Button
-                    onClick={handleLoadGraph}
-                    disabled={isLoading}
-                    className="w-full"
-                    size="lg"
+                    variant="ghost"
+                    onClick={() => {
+                        setActiveTab('general');
+                        setSelectedAlgorithm(null);
+                        setNodes([]); setEdges([]); setAvailableNodes([]);
+                        setGraphLoaded(false);
+                    }}
+                    className={`flex-1 h-8 text-xs font-medium ${activeTab === 'general' ? 'bg-[var(--bg-elevated)] shadow-sm text-[var(--accent-blue)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
                 >
-                    {isLoading ? (
-                        <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Loading...
-                        </>
-                    ) : isGraphLoaded ? (
-                        <>
-                            <RotateCcw className="mr-2 h-4 w-4" />
-                            Reload Graph
-                        </>
-                    ) : (
-                        <>
-                            <ChevronRight className="mr-2 h-4 w-4" />
-                            Load Road Network
-                        </>
-                    )}
+                    <Network className="w-3.5 h-3.5 mr-2" />
+                    Graph Algorithms
                 </Button>
-
-                {isGraphLoaded && (
-                    <p
-                        className="text-sm mt-3 flex items-center gap-2 animate-fade-in"
-                        style={{ color: 'var(--accent-green)' }}
-                    >
-                        <span className="w-2 h-2 rounded-full" style={{ background: 'var(--accent-green)' }}></span>
-                        {availableNodes.length} nodes loaded
-                    </p>
-                )}
+                <Button
+                    variant="ghost"
+                    onClick={() => {
+                        setActiveTab('pert');
+                        setSelectedAlgorithm('pert');
+                        // Reset graph state for PERT
+                        setNodes([]); setEdges([]); setAvailableNodes([]);
+                        updatePertGraph();
+                    }}
+                    className={`flex-1 h-8 text-xs font-medium ${activeTab === 'pert' ? 'bg-[var(--bg-elevated)] shadow-sm text-[var(--accent-purple)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
+                >
+                    <ListTodo className="w-3.5 h-3.5 mr-2" />
+                    PERT Analysis
+                </Button>
             </div>
 
-            {/* Section 2: Algorithm */}
-            <div
-                className="section-card"
-                style={{ animationDelay: '100ms' }}
-            >
-                <div className="section-title">
-                    {/* <Zap className="w-4 h-4" style={{ color: 'var(--accent-yellow)' }} /> */}
-                    <span>Algorithm</span>
-                </div>
+            {activeTab === 'general' && (
+                <>
+                    {/* Section 1: Graph Data */}
+                    <div
+                        className="section-card animate-fade-in"
+                        style={{ animationDelay: '50ms' }}
+                    >
+                        <div className="section-title">
+                            {/* <Sparkles className="w-4 h-4" style={{ color: 'var(--accent-purple)' }} /> */}
+                            <span>Graph Data</span>
+                        </div>
 
-                <div className="space-y-4">
-                    <div className="space-y-2">
-                        <Label className="form-label">Select Algorithm</Label>
-                        <Select
-                            value={selectedAlgorithm || ''}
-                            onValueChange={(v) => setSelectedAlgorithm(v as AlgorithmName)}
-                            disabled={!isGraphLoaded}
+                        <Button
+                            onClick={handleLoadGraph}
+                            disabled={isLoading}
+                            className="w-full"
+                            size="lg"
                         >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Choose an algorithm" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="bfs">BFS (Breadth-First)</SelectItem>
-                                <SelectItem value="dfs">DFS (Depth-First)</SelectItem>
-                                <SelectItem value="dijkstra">Dijkstra</SelectItem>
-                                <SelectItem value="bellman-ford">Bellman-Ford</SelectItem>
-                                <SelectItem value="prim">Prim's MST</SelectItem>
-                                <SelectItem value="kruskal">Kruskal's MST</SelectItem>
-                                <SelectItem value="pert">PERT Analysis</SelectItem>
-                            </SelectContent>
-                        </Select>
+                            {isLoading ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Loading...
+                                </>
+                            ) : isGraphLoaded ? (
+                                <>
+                                    <RotateCcw className="mr-2 h-4 w-4" />
+                                    Reload Graph
+                                </>
+                            ) : (
+                                <>
+                                    <ChevronRight className="mr-2 h-4 w-4" />
+                                    Load Road Network
+                                </>
+                            )}
+                        </Button>
+
+                        {isGraphLoaded && (
+                            <p
+                                className="text-sm mt-3 flex items-center gap-2 animate-fade-in"
+                                style={{ color: 'var(--accent-green)' }}
+                            >
+                                <span className="w-2 h-2 rounded-full" style={{ background: 'var(--accent-green)' }}></span>
+                                {availableNodes.length} nodes loaded
+                            </p>
+                        )}
                     </div>
 
-                    {selectedAlgorithm === 'pert' && (
-                        <div className="space-y-2 animate-fade-in">
-                            <Label className="form-label">Project Tasks</Label>
+
+
+                    {/* Section 2: Algorithm */}
+                    <div
+                        className="section-card animate-fade-in"
+                        style={{ animationDelay: '100ms' }}
+                    >
+                        <div className="section-title">
+                            <span>Algorithm</span>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label className="form-label">Select Algorithm</Label>
+                                <Select
+                                    value={selectedAlgorithm || ''}
+                                    onValueChange={(v) => setSelectedAlgorithm(v as AlgorithmName)}
+                                    disabled={!isGraphLoaded}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Choose an algorithm" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="bfs">BFS (Breadth-First)</SelectItem>
+                                        <SelectItem value="dfs">DFS (Depth-First)</SelectItem>
+                                        <SelectItem value="dijkstra">Dijkstra</SelectItem>
+                                        <SelectItem value="bellman-ford">Bellman-Ford</SelectItem>
+                                        <SelectItem value="prim">Prim's MST</SelectItem>
+                                        <SelectItem value="kruskal">Kruskal's MST</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {algorithmInfo && (
+                                <p
+                                    className="text-sm leading-relaxed"
+                                    style={{ color: 'var(--text-secondary)' }}
+                                >
+                                    {algorithmInfo.description}
+                                </p>
+                            )}
+
+                            <div className="space-y-2">
+                                <Label className="form-label">Start Node</Label>
+                                <Select
+                                    value={startNode}
+                                    onValueChange={setStartNode}
+                                    disabled={!isGraphLoaded}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select start" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {availableNodes.map(node => (
+                                            <SelectItem key={node} value={node}>{node}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {algorithmInfo?.needsEndNode && (
+                                <div className="space-y-2">
+                                    <Label className="form-label">End Node (optional)</Label>
+                                    <Select
+                                        value={endNode}
+                                        onValueChange={setEndNode}
+                                        disabled={!isGraphLoaded}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select end" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {availableNodes.filter(n => n !== startNode).map(node => (
+                                                <SelectItem key={node} value={node}>{node}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            )}
+
+                            <Button
+                                onClick={handleRunAlgorithm}
+                                disabled={!selectedAlgorithm || isRunning || (!startNode || (!!algorithmInfo?.needsEndNode && !endNode))}
+                                className="w-full mt-2"
+                                size="lg"
+                            >
+                                {isRunning ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Running...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Play className="mr-2 h-4 w-4" />
+                                        Run Algorithm
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                </>
+            )
+            }
+
+            {
+                activeTab === 'pert' && (
+                    <div
+                        className="section-card animate-fade-in"
+                        style={{ animationDelay: '50ms' }}
+                    >
+                        <div className="section-title">
+                            <span>Project Configuration</span>
+                        </div>
+
+                        <div className="space-y-6">
+                            <div className="bg-[var(--bg-tertiary)] p-4 rounded-lg border border-[var(--border-subtle)]">
+                                <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
+                                    <ListTodo className="w-4 h-4 text-[var(--accent-purple)]" />
+                                    Task Management
+                                </h3>
+                                <p className="text-xs text-[var(--text-secondary)] mb-4">
+                                    Define your project tasks, durations, and dependencies to generate a PERT chart.
+                                </p>
+
+                                <Button
+                                    variant="outline"
+                                    className="w-full justify-between bg-[var(--bg-secondary)]"
+                                    onClick={() => setIsTaskModalOpen(true)}
+                                >
+                                    <span>{pertTasks.length} Tasks defined</span>
+                                    <Settings className="w-4 h-4 ml-2" />
+                                </Button>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="form-label">Analysis</Label>
+                                <p className="text-xs text-[var(--text-tertiary)]">
+                                    Runs the PERT analysis to calculate Early/Late dates, slack time, and identify the Critical Path.
+                                </p>
+                                <Button
+                                    onClick={handleRunAlgorithm}
+                                    disabled={isRunning || pertTasks.length === 0}
+                                    className="w-full mt-2"
+                                    size="lg"
+                                >
+                                    {isRunning ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            Processing...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Play className="mr-2 h-4 w-4" />
+                                            Compute Schedule
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
+                        </div>
+
+                        <PertTaskEditor
+                            isOpen={isTaskModalOpen}
+                            onClose={() => {
+                                setIsTaskModalOpen(false);
+                                updatePertGraph();
+                            }}
+                        />
+                    </div>
+                )
+            }
+
+            {/* Section 3: Playback (conditional) */}
+            {
+                steps.length > 0 && (
+                    <div
+                        className="section-card animate-scale-in"
+                    >
+                        <div className="section-title">
+                            <Play className="w-4 h-4" style={{ color: 'var(--accent-cyan)' }} />
+                            <span>Playback</span>
+                        </div>
+
+                        <div className="flex items-center justify-center gap-2 mb-4">
                             <Button
                                 variant="outline"
-                                className="w-full justify-between"
-                                onClick={() => setIsTaskModalOpen(true)}
+                                size="icon"
+                                onClick={reset}
                             >
-                                <span>{pertTasks.length} Tasks defined</span>
-                                <Settings className="w-4 h-4 ml-2" />
+                                <RotateCcw className="h-4 w-4" />
                             </Button>
-                            <PertTaskEditor
-                                isOpen={isTaskModalOpen}
-                                onClose={() => {
-                                    setIsTaskModalOpen(false);
-                                    // Update graph preview on close
-                                    if (selectedAlgorithm === 'pert') updatePertGraph();
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => {
+                                    reset();
+                                    const { goToStep } = useAppStore.getState();
+                                    if (playback.currentStepIndex > 0) {
+                                        goToStep(playback.currentStepIndex - 1);
+                                    }
+                                }}
+                            >
+                                <SkipBack className="h-4 w-4" />
+                            </Button>
+                            <Button
+                                size="icon"
+                                onClick={playback.isPlaying ? pause : play}
+                                className="w-11 h-11"
+                            >
+                                {playback.isPlaying ? (
+                                    <Pause className="h-5 w-5" />
+                                ) : (
+                                    <Play className="h-5 w-5" />
+                                )}
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={nextStep}
+                            >
+                                <SkipForward className="h-4 w-4" />
+                            </Button>
+                        </div>
+
+                        <div className="space-y-3">
+                            <div
+                                className="flex justify-between text-sm"
+                                style={{ color: 'var(--text-secondary)' }}
+                            >
+                                <span>Step {playback.currentStepIndex + 1}</span>
+                                <span>of {steps.length}</span>
+                            </div>
+                            <Slider
+                                value={[playback.currentStepIndex + 1]}
+                                min={0}
+                                max={steps.length}
+                                step={1}
+                                onValueChange={([v]) => {
+                                    const { goToStep, clearVisualization } = useAppStore.getState();
+                                    if (v === 0) {
+                                        clearVisualization();
+                                    } else {
+                                        goToStep(v - 1);
+                                    }
                                 }}
                             />
                         </div>
-                    )}
 
-                    {algorithmInfo && (
-                        <p
-                            className="text-sm leading-relaxed"
-                            style={{ color: 'var(--text-secondary)' }}
-                        >
-                            {algorithmInfo.description}
-                        </p>
-                    )}
-
-                    <div className="space-y-2">
-                        <Label className="form-label">Start Node</Label>
-                        <Select
-                            value={startNode}
-                            onValueChange={setStartNode}
-                            disabled={!isGraphLoaded}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select start" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {availableNodes.map(node => (
-                                    <SelectItem key={node} value={node}>{node}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-
-                    {algorithmInfo?.needsEndNode && (
-                        <div className="space-y-2">
-                            <Label className="form-label">End Node (optional)</Label>
-                            <Select
-                                value={endNode}
-                                onValueChange={setEndNode}
-                                disabled={!isGraphLoaded}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select end" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {availableNodes.filter(n => n !== startNode).map(node => (
-                                        <SelectItem key={node} value={node}>{node}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                        <div className="space-y-2 mt-4">
+                            <Label className="form-label">Speed: {playback.speed}ms</Label>
+                            <Slider
+                                value={[playback.speed]}
+                                min={100}
+                                max={2000}
+                                step={100}
+                                onValueChange={([v]) => setSpeed(v)}
+                            />
                         </div>
-                    )}
-
-                    <Button
-                        onClick={handleRunAlgorithm}
-                        disabled={!selectedAlgorithm || isRunning || (selectedAlgorithm !== 'pert' && (!startNode || (!!algorithmInfo?.needsEndNode && !endNode)))}
-                        className="w-full mt-2"
-                        size="lg"
-                    >
-                        {isRunning ? (
-                            <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Running...
-                            </>
-                        ) : (
-                            <>
-                                <Play className="mr-2 h-4 w-4" />
-                                Run Algorithm
-                            </>
-                        )}
-                    </Button>
-                </div>
-            </div>
-
-            {/* Section 3: Playback (conditional) */}
-            {steps.length > 0 && (
-                <div
-                    className="section-card animate-scale-in"
-                >
-                    <div className="section-title">
-                        <Play className="w-4 h-4" style={{ color: 'var(--accent-cyan)' }} />
-                        <span>Playback</span>
                     </div>
-
-                    <div className="flex items-center justify-center gap-2 mb-4">
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={reset}
-                        >
-                            <RotateCcw className="h-4 w-4" />
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => {
-                                reset();
-                                const { goToStep } = useAppStore.getState();
-                                if (playback.currentStepIndex > 0) {
-                                    goToStep(playback.currentStepIndex - 1);
-                                }
-                            }}
-                        >
-                            <SkipBack className="h-4 w-4" />
-                        </Button>
-                        <Button
-                            size="icon"
-                            onClick={playback.isPlaying ? pause : play}
-                            className="w-11 h-11"
-                        >
-                            {playback.isPlaying ? (
-                                <Pause className="h-5 w-5" />
-                            ) : (
-                                <Play className="h-5 w-5" />
-                            )}
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={nextStep}
-                        >
-                            <SkipForward className="h-4 w-4" />
-                        </Button>
-                    </div>
-
-                    <div className="space-y-3">
-                        <div
-                            className="flex justify-between text-sm"
-                            style={{ color: 'var(--text-secondary)' }}
-                        >
-                            <span>Step {playback.currentStepIndex + 1}</span>
-                            <span>of {steps.length}</span>
-                        </div>
-                        <Slider
-                            value={[playback.currentStepIndex + 1]}
-                            min={0}
-                            max={steps.length}
-                            step={1}
-                            onValueChange={([v]) => {
-                                const { goToStep, clearVisualization } = useAppStore.getState();
-                                if (v === 0) {
-                                    clearVisualization();
-                                } else {
-                                    goToStep(v - 1);
-                                }
-                            }}
-                        />
-                    </div>
-
-                    <div className="space-y-2 mt-4">
-                        <Label className="form-label">Speed: {playback.speed}ms</Label>
-                        <Slider
-                            value={[playback.speed]}
-                            min={100}
-                            max={2000}
-                            step={100}
-                            onValueChange={([v]) => setSpeed(v)}
-                        />
-                    </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 }

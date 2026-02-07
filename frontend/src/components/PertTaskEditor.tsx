@@ -3,7 +3,7 @@ import { X, Plus, Trash2, Edit2, Save } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { useAppStore, PertTask } from '../lib/store';
+import { useAppStore, type PertTask } from '../lib/store';
 
 interface PertTaskEditorProps {
     isOpen: boolean;

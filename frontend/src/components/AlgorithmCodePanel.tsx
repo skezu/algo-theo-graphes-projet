@@ -194,6 +194,38 @@ const ALGORITHM_CODE: Record<AlgorithmName, AlgorithmCodeData> = {
             'skip_edge': [9],
             'complete': [16],
         }
+    },
+    pert: {
+        title: 'PERT Analysis',
+        lines: [
+            'function PERT(tasks):',
+            '    // Check for cycles',
+            '    if has_cycle(tasks):',
+            '        return error',
+            '',
+            '    // Forward Pass (Earliest Dates)',
+            '    for task in topological_sort(tasks):',
+            '        ES = max(predecessors.EF)',
+            '        EF = ES + duration',
+            '',
+            '    // Backward Pass (Latest Dates)',
+            '    for task in reverse_topological_sort(tasks):',
+            '        LF = min(successors.LS)',
+            '        LS = LF - duration',
+            '',
+            '    // Critical Path & Float',
+            '    Float = LS - ES',
+            '    if Float == 0: Critical = true',
+            '',
+            '    return schedule',
+        ],
+        stepToLines: {
+            'init': [0, 1, 2, 3],
+            'forward_pass': [6, 7, 8],
+            'backward_pass': [11, 12, 13],
+            'calc_float': [16, 17],
+            'complete': [19],
+        }
     }
 };
 
