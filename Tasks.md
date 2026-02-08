@@ -44,9 +44,11 @@
 - [x] Implémenter le frontend React avec React Flow
 - [x] Implémenter la visualisation dynamique des algorithmes
 - [x] Intégrer l'algorithme PERT dans l'interface (Éditeur de tâches, Visualisation)
+- [ ] Implémenter la visualisation pas-à-pas du calcul PERT (EET/LET sur les nœuds)
 - [ ] Tester tous les algorithmes visuellement
 - [x] Corriger le crash de l'interface visuelle lors de l'exécution de Dijkstra
 - [x] Corriger le faux positif "Algorithm returned no steps" (Sérialisation Infinity)
+- [x] Corriger le problème de durée 0 dans la visualisation PERT
 
 ## 8. Améliorations UI/UX (Nouveau)
 - [x] Améliorer le thème sombre avec une palette de couleurs raffinée

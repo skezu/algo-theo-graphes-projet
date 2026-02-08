@@ -562,7 +562,8 @@ class PertScheduler:
                 "target": node_id_map[edge["target"]],
                 "label": edge["label"],
                 "is_dummy": edge.get("is_dummy", False),
-                "task_id": edge.get("task_id")
+                "task_id": edge.get("task_id"),
+                "duration": edge.get("duration", 0)
             })
             
         return {"nodes": final_nodes, "edges": final_edges}
