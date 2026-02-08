@@ -222,19 +222,91 @@ export const useAppStore = create<AppState>((set, get) => ({
                     const [u, v] = step.targetId.split('-');
                     newState.mstEdges.add(`${v}-${u}`);
                     break;
+
+                // PERT Specific Steps
+                case 'visit_node':
+                    // Reuse visit_node for highlighting current event being evaluated
+                    const { eet: visitEet } = step.data || {};
+                    if (visitEet !== undefined) {
+                        newState.nodes = state.nodes.map(n =>
+                            n.id === step.targetId
+                                ? { ...n, data: { ...n.data, eet: visitEet } }
+                                : n
+                        );
+                    }
+                    newState.visitedNodes = new Set(state.visitedNodes).add(step.targetId);
+                    newState.currentNode = step.targetId;
+                    break;
+
+                case 'visit_node_back':
+                    const { let: visitLet } = step.data || {};
+                    if (visitLet !== undefined) {
+                        newState.nodes = state.nodes.map(n =>
+                            n.id === step.targetId
+                                ? { ...n, data: { ...n.data, let: visitLet } }
+                                : n
+                        );
+                    }
+                    newState.visitedNodes = new Set(state.visitedNodes).add(step.targetId);
+                    newState.currentNode = step.targetId;
+                    break;
+
+                case 'update_event':
+                    // Update node data (eet/let)
+                    const { eet, let: letVal } = step.data || {};
+                    console.log('Applying update_event', step.targetId, step.data);
+                    newState.nodes = state.nodes.map(n => {
+                        if (n.id === step.targetId) {
+                            console.log('Updating node match', n.id, { eet, letVal });
+                            return { ...n, data: { ...n.data, ...(eet !== undefined && { eet }), ...(letVal !== undefined && { let: letVal }) } };
+                        }
+                        return n;
+                    });
+                    // Also highlight as visited
+                    newState.visitedNodes = new Set(state.visitedNodes).add(step.targetId);
+                    newState.currentNode = step.targetId;
+                    break;
+
+                case 'mark_critical_node':
+                    newState.nodes = state.nodes.map(n =>
+                        n.id === step.targetId
+                            ? { ...n, data: { ...n.data, isCritical: true } }
+                            : n
+                    );
+                    break;
+
+                case 'mark_critical_edge':
+                    // Map to pathEdges for highlighting (red)
+                    const newPath = new Set(state.pathEdges);
+                    newPath.add(step.targetId);
+                    newState.pathEdges = newPath;
+                    break;
+
+                case 'check_successor':
+                    // Just highlight the edge being checked
+                    const newExplored = new Set(state.exploredEdges);
+                    newExplored.add(step.targetId);
+                    newState.exploredEdges = newExplored;
+                    break;
             }
 
             return newState;
         });
     },
 
-    clearVisualization: () => set({
+    clearVisualization: () => set((state) => ({
         visitedNodes: new Set(),
         currentNode: null,
         exploredEdges: new Set(),
         pathEdges: new Set(),
         mstEdges: new Set(),
-    }),
+        // Reset PERT data for playback
+        nodes: state.nodes.map((n: Node) =>
+            n.type === 'pert'
+                ? { ...n, data: { ...n.data, eet: undefined, let: undefined, isCritical: false } }
+                : n
+        ),
+    })),
 
     // PERT state
     pertTasks: [

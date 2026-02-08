@@ -5,6 +5,7 @@ import { useEffect, useRef } from 'react';
 import { useAppStore } from '../lib/store';
 import { cn } from '../lib/utils';
 import { ListOrdered, Search } from 'lucide-react';
+import ResultDisplay from './ResultDisplay';
 
 interface StepsPanelProps {
     hideHeader?: boolean;
@@ -161,18 +162,7 @@ export default function StepsPanel({ hideHeader = false }: StepsPanelProps) {
 
                 {/* Result summary */}
                 {result && playback.currentStepIndex >= steps.length - 1 && (
-                    <div className="result-card mt-4 animate-scale-in">
-                        <h4 className="result-card-title">
-                            <span>✨</span>
-                            <span>Result</span>
-                        </h4>
-                        <pre
-                            className="text-xs overflow-x-auto font-mono leading-relaxed"
-                            style={{ color: 'var(--text-primary)' }}
-                        >
-                            {JSON.stringify(result, null, 2)}
-                        </pre>
-                    </div>
+                    <ResultDisplay result={result} algorithm={selectedAlgorithm} />
                 )}
             </div>
         </div>

@@ -68,6 +68,7 @@
 - [x] Séparer l'interface PERT dans un onglet dédié pour une meilleure ergonomie
 - [x] Refondre l'éditeur de tâches PERT avec une vue liste/édition séparée pour éviter l'encombrement
 - [x] Styliser les nœuds PERT selon le modèle AoA (Cercle avec ES (Vert) / LS (Rouge))
+- [x] Afficher les résultat d'exécution dans un tableau ou un dialogue clair (au lieu du JSON brut)
 ## 9. Documentation (Nouveau)
 - [x] Générer un `README.md` simple avec les commandes d'installation et de lancement
 
