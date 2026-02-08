@@ -30,12 +30,13 @@
 - [x] Implémenter `PertScheduler.get_critical_path`
 - [x] Implémenter `PertScheduler.get_full_schedule` et `get_project_duration`
 - [x] Implémenter `PertScheduler.validate_no_cycles`
-- [ ] Implémenter `PertScheduler.load_sample_project`
+- [x] Implémenter `PertScheduler.load_sample_project`
+- [x] Implémenter `PertScheduler.validate_no_cycles`
 
 ## 6. Validation et Démonstration
-- [ ] Décommenter les tests dans `main.py`
-- [ ] Vérifier les résultats sur le graphe routier
-- [ ] Vérifier les résultats sur le projet PERT exemple
+- [x] Décommenter les tests dans `main.py`
+- [x] Vérifier les résultats sur le graphe routier (CLI)
+- [x] Vérifier les résultats sur le projet PERT exemple (CLI)
 
 ## 7. Interface Visuelle (Nouveau)
 - [x] Créer `api.py` (Serveur FastAPI)
@@ -45,7 +46,7 @@
 - [x] Implémenter la visualisation dynamique des algorithmes
 - [x] Intégrer l'algorithme PERT dans l'interface (Éditeur de tâches, Visualisation)
 - [ ] Implémenter la visualisation pas-à-pas du calcul PERT (EET/LET sur les nœuds)
-- [ ] Tester tous les algorithmes visuellement
+- [x] Tester tous les algorithmes visuellement
 - [x] Corriger le crash de l'interface visuelle lors de l'exécution de Dijkstra
 - [x] Corriger le faux positif "Algorithm returned no steps" (Sérialisation Infinity)
 - [x] Corriger le problème de durée 0 dans la visualisation PERT
@@ -69,8 +70,11 @@
 - [x] Refondre l'éditeur de tâches PERT avec une vue liste/édition séparée pour éviter l'encombrement
 - [x] Styliser les nœuds PERT selon le modèle AoA (Cercle avec ES (Vert) / LS (Rouge))
 - [x] Afficher les résultat d'exécution dans un tableau ou un dialogue clair (au lieu du JSON brut)
-## 9. Documentation (Nouveau)
+
+## 9. Documentation & Nettoyage (Nouveau)
 - [x] Générer un `README.md` simple avec les commandes d'installation et de lancement
+- [x] Nettoyer le dépôt (suppression des scripts temporaires et fichiers inutiles)
+- [x] Rendre le point d'entrée `main.py` fonctionnel pour une démonstration CLI
 
 ## 10. Configuration & Agent (Nouveau)
 - [x] Générer les règles de pilotage (Steering Rules) pour l'agent

@@ -370,10 +370,12 @@ class PertScheduler:
 
         Returns:
             True si le graphe est acyclique, False sinon.
-
-        Note:
-            Utilise un tri topologique ou un DFS pour détecter les cycles.
         """
+        try:
+            self.get_topological_sort()
+            return True
+        except ValueError:
+            return False
     def get_aoa_structure(self) -> Dict[str, Any]:
         """
         Génère une structure Activity-on-Arrow (AoA) simplifiée.
@@ -587,17 +589,22 @@ class PertScheduler:
         Crée un ensemble de tâches avec dépendances pour démontrer
         les fonctionnalités du planificateur PERT.
         """
-        # TODO: Ajouter des tâches d'exemple
         # Exemple de projet de construction:
         # - A: Études préliminaires (durée: 3)
         # - B: Fondations (durée: 5, après A)
         # - C: Murs (durée: 4, après B)
         # - D: Toiture (durée: 3, après C)
         # - E: Électricité (durée: 2, après B)
-        # - F: Finitions (durée: 2, après D et E)
-        raise NotImplementedError(
-            "La méthode load_sample_project doit être implémentée."
-        )
+        # - F: Plomberie (durée: 2, après B)
+        # - G: Finitions (durée: 2, après D, E et F)
+        
+        self.add_task("A", "Études préliminaires", 3.0, [])
+        self.add_task("B", "Fondations", 5.0, ["A"])
+        self.add_task("C", "Murs", 4.0, ["B"])
+        self.add_task("D", "Toiture", 3.0, ["C"])
+        self.add_task("E", "Électricité", 2.0, ["B"])
+        self.add_task("F", "Plomberie", 2.0, ["B"])
+        self.add_task("G", "Finitions", 2.0, ["D", "E", "F"])
 
     def __repr__(self) -> str:
         """Représentation textuelle du planificateur."""
