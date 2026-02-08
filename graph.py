@@ -195,6 +195,28 @@ class Graph:
         for u, v, w in connections:
             self.add_edge(u, v, float(w))
 
+    def load_negative_weights_no_cycle_data(self) -> None:
+        """
+        Charge un graphe avec des poids négatifs mais SANS cycle négatif.
+        """
+        self.directed = True
+        self.adjacency_list = {}
+
+        connections = [
+            ("Paris", "Lyon", 5),
+            ("Paris", "Bordeaux", 5),
+            ("Bordeaux", "Toulouse", 2),
+            ("Toulouse", "Marseille", 1),
+            ("Lyon", "Marseille", 5),
+            ("Marseille", "Nice", -3), # Poids négatif mais en fin de parcours
+            ("Lyon", "Nice", 10),
+            ("Nice", "Montpellier", 4),
+            ("Montpellier", "Toulouse", 5) # Retour vers Toulouse (Nice->Mont->Tou = 4+5=9). Cycle M->N->Mo->T->M : -3+4+5+1 = 7 > 0. Pas de cycle négatif.
+        ]
+
+        for u, v, w in connections:
+            self.add_edge(u, v, float(w))
+
     def __repr__(self) -> str:
         """Représentation textuelle du graphe."""
         graph_type = "orienté" if self.directed else "non orienté"
