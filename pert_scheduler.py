@@ -96,9 +96,11 @@ class PertScheduler:
         if predecessors is None:
             predecessors = []
 
-        for pred_id in predecessors:
-            if pred_id not in self.tasks:
-                raise ValueError(f"Le prédécesseur {pred_id} n'existe pas.")
+        # Validation des prédécesseurs reportée à la validation globale
+        # pour permettre l'ajout dans le désordre.
+        # for pred_id in predecessors:
+        #     if pred_id not in self.tasks:
+        #         raise ValueError(f"Le prédécesseur {pred_id} n'existe pas.")
 
         task = Task(
             id=task_id,
@@ -116,6 +118,15 @@ class PertScheduler:
                 if pred_id in successors:
                     successors[pred_id].append(task.id)
         return successors
+
+    def validate_dependencies(self) -> None:
+        """
+        Vérifie que tous les prédécesseurs référencés existent.
+        """
+        for task_id, task in self.tasks.items():
+            for pred_id in task.predecessors:
+                if pred_id not in self.tasks:
+                    raise ValueError(f"La tâche {task_id} dépend d'une tâche inconnue: {pred_id}")
 
     def get_topological_sort(self) -> List[str]:
         """Retourne les IDs des tâches triées topologiquement."""

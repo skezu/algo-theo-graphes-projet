@@ -49,6 +49,7 @@
 - [x] Corriger le crash de l'interface visuelle lors de l'exécution de Dijkstra
 - [x] Corriger le faux positif "Algorithm returned no steps" (Sérialisation Infinity)
 - [x] Corriger le problème de durée 0 dans la visualisation PERT
+- [x] Corriger le crash lors de l'ajout de tâches désordonnées (PERT)
 
 ## 8. Améliorations UI/UX (Nouveau)
 - [x] Améliorer le thème sombre avec une palette de couleurs raffinée
