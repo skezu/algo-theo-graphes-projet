@@ -46,11 +46,9 @@ export default function PertNode({ data, selected }: NodeProps) {
                 color: 'var(--text-primary)',
             }}
         >
-            <Handle
-                type="target"
-                position={Position.Left}
-                style={{ background: borderColor, width: 6, height: 6, opacity: 0.8 }}
-            />
+            {/* Handles primarily for vertical layout (Top/Bottom) but kept flexible */}
+            <Handle type="target" position={Position.Top} id="top" style={{ background: borderColor, opacity: 0 }} />
+            <Handle type="target" position={Position.Left} id="left" style={{ background: borderColor, opacity: 0 }} />
 
             {/* Top Half: Event Label (Number) */}
             <div className="h-1/2 flex flex-col items-center justify-center border-b border-[var(--border-subtle)] bg-white/5 w-full">
@@ -75,11 +73,8 @@ export default function PertNode({ data, selected }: NodeProps) {
                 </div>
             </div>
 
-            <Handle
-                type="source"
-                position={Position.Right}
-                style={{ background: borderColor, width: 6, height: 6, opacity: 0.8 }}
-            />
+            <Handle type="source" position={Position.Right} id="right" style={{ background: borderColor, opacity: 0 }} />
+            <Handle type="source" position={Position.Bottom} id="bottom" style={{ background: borderColor, opacity: 0 }} />
         </div>
     );
 }

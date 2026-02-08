@@ -86,7 +86,7 @@ export default function GraphCanvas() {
 
                 return {
                     ...edge,
-                    type: 'smoothstep',
+                    type: edge.type || 'smoothstep',
                     className,
                     style,
                     label: edge.label,

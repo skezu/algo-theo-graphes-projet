@@ -79,13 +79,15 @@ export default function ControlPanel() {
                 source: e.source,
                 target: e.target,
                 label: e.label,
-                type: e.is_dummy ? 'default' : 'smoothstep', // Dummies default (bezier) or straight?
+                type: 'straight',
                 animated: e.is_dummy,
                 style: {
                     stroke: e.is_dummy ? 'var(--text-tertiary)' : 'var(--text-primary)',
                     strokeWidth: e.is_dummy ? 1.5 : 2,
                     strokeDasharray: e.is_dummy ? '5,5' : 'none'
                 },
+                sourceHandle: 'bottom',
+                targetHandle: 'top',
                 markerEnd: { type: 'arrowclosed' },
             }));
 
