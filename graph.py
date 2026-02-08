@@ -173,6 +173,28 @@ class Graph:
         for city1, city2, distance in road_connections:
             self.add_edge(city1, city2, float(distance))
 
+    def load_negative_weights_data(self) -> None:
+        """
+        Charge un graphe avec des poids négatifs pour tester Bellman-Ford.
+        """
+        # Graphe orienté pour éviter les cycles négatifs immédiats d'arêtes bidirectionnelles
+        self.directed = True
+        self.adjacency_list = {} # Reset
+
+        connections = [
+            ("Paris", "Lyon", 4),
+            ("Paris", "Bordeaux", 5),
+            ("Lyon", "Marseille", 3),
+            ("Bordeaux", "Toulouse", 2),
+            ("Toulouse", "Marseille", 1),
+            ("Marseille", "Nice", -2), # Poids négatif
+            ("Nice", "Toulouse", -5), # Cycle négatif potentiel si mal géré, ou raccourci
+            ("Lyon", "Nice", 10)
+        ]
+
+        for u, v, w in connections:
+            self.add_edge(u, v, float(w))
+
     def __repr__(self) -> str:
         """Représentation textuelle du graphe."""
         graph_type = "orienté" if self.directed else "non orienté"

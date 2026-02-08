@@ -322,6 +322,53 @@ export default function ControlPanel() {
                                 </p>
                             )}
 
+                            {selectedAlgorithm === 'bellman-ford' && (
+                                <Button
+                                    onClick={async () => {
+                                        setIsLoading(true);
+                                        try {
+                                            await loadGraph('negative_weights');
+                                            const graphData = await getGraphData();
+
+                                            // Convert to React Flow format
+                                            const nodes: Node[] = graphData.nodes.map(n => ({
+                                                id: n.id,
+                                                position: n.position,
+                                                data: n.data,
+                                                type: 'default',
+                                            }));
+
+                                            const edges: Edge[] = graphData.edges.map(e => ({
+                                                id: e.id,
+                                                source: e.source,
+                                                target: e.target,
+                                                label: e.label,
+                                                data: e.data,
+                                                markerEnd: { type: 'arrowclosed' }, // Directed graph
+                                                style: { stroke: (e.data?.weight as number) < 0 ? '#ef4444' : undefined } // Red for negative
+                                            }));
+
+                                            setNodes(nodes);
+                                            setEdges(edges);
+                                            setAvailableNodes(graphData.nodes.map(n => n.id));
+                                            setGraphLoaded(true);
+
+                                            // Auto select start for this graph
+                                            setStartNode('Paris');
+
+                                        } catch (error) {
+                                            console.error('Failed to load negative weights graph:', error);
+                                        } finally {
+                                            setIsLoading(false);
+                                        }
+                                    }}
+                                    variant="outline"
+                                    className="w-full text-xs border-dashed border-[var(--accent-red)] text-[var(--accent-red)] hover:bg-[var(--accent-red)] hover:text-white"
+                                >
+                                    ⚠ Load Graph with Negative Weights
+                                </Button>
+                            )}
+
                             <div className="space-y-2">
                                 <Label className="form-label">Start Node</Label>
                                 <Select

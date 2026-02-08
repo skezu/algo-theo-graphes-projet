@@ -99,6 +99,14 @@ def load_graph():
             "nodes": len(current_graph.get_nodes()),
             "edges": len(current_graph.get_edges())
         })
+    elif graph_type == "negative_weights":
+        current_graph = Graph(directed=True)
+        current_graph.load_negative_weights_data()
+        return jsonify({
+            "message": "Graph with negative weights loaded",
+            "nodes": len(current_graph.get_nodes()),
+            "edges": len(current_graph.get_edges())
+        })
     else:
         return jsonify({"error": f"Unknown graph type: {graph_type}"}), 400
 
