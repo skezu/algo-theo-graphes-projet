@@ -72,7 +72,7 @@
 - [x] Afficher les résultat d'exécution dans un tableau ou un dialogue clair (au lieu du JSON brut)
 
 ## 9. Documentation & Nettoyage (Nouveau)
-- [x] Générer un `README.md` simple avec les commandes d'installation et de lancement
+- [x] Générer un `README.md` complet et pédagogique avec explications, code et analyses
 - [x] Nettoyer le dépôt (suppression des scripts temporaires et fichiers inutiles)
 - [x] Rendre le point d'entrée `main.py` fonctionnel pour une démonstration CLI
 
